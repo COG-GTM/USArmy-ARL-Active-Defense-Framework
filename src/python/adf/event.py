@@ -78,29 +78,33 @@ class Listener(Plugin):
         if self.ssl:
             class EventSocket(socketserver.StreamRequestHandler):
                 def handle(self):
-                    try:
-                        l = struct.unpack('!L', self.rfile.read(4))[0]
-                        event = pickle.loads(self.rfile.read(l))
-                        event.path.append(self.server.parent.name)
-                        self.server.parent.debug(
-                            '%s %s %s', self.client_address, l, event)
-                        # we're not a Plugin instance so we have to call event in the parent
-                        self.server.parent.event(event=event)
-                    except Exception as e:
-                        self.server.parent.debug(e)
+                    while True:
+                        try:
+                            l = struct.unpack('!L', self.rfile.read(4))[0]
+                            event = pickle.loads(self.rfile.read(l))
+                            event.path.append(self.server.parent.name)
+                            self.server.parent.debug(
+                                '%s %s %s', self.client_address, l, event)
+                            # we're not a Plugin instance so we have to call event in the parent
+                            self.server.parent.event(event=event)
+                        except Exception as e: # likely closed by client
+                            self.server.parent.debug(e)
+                            break
         else:
             class EventSocket(socketserver.BaseRequestHandler):
                 def handle(self):
-                    try:
-                        l = struct.unpack('!L', self.request.recv(4))[0]
-                        event = pickle.loads(self.request.recv(l))
-                        event.path.append(self.server.parent.name)
-                        self.server.parent.debug(
-                            '%s %s %s', self.client_address, l, event)
-                        # we're not a Plugin instance so we have to call event in the parent
-                        self.server.parent.event(event=event)
-                    except Exception as e:
-                        self.server.parent.debug(e)
+                    while True:
+                        try:
+                            l = struct.unpack('!L', self.request.recv(4))[0]
+                            event = pickle.loads(self.request.recv(l))
+                            event.path.append(self.server.parent.name)
+                            self.server.parent.debug(
+                                '%s %s %s', self.client_address, l, event)
+                            # we're not a Plugin instance so we have to call event in the parent
+                            self.server.parent.event(event=event)
+                        except Exception as e: # likely closed by client
+                            self.server.parent.debug(e)
+                            break
 
         class EventServer (socketserver.TCPServer):
             allow_reuse_address = True
@@ -149,31 +153,34 @@ class Sender(Plugin):
     def send(self, event):
         # turn event into a generic dict
         data = pickle.dumps(event)
-        if not self.__socket:  # open socket
-            self.__socket = socket.create_connection(
-                (self.host, int(self.port)), 1)
-            if self.ssl:
-                import ssl
-                ctx = ssl.create_default_context(
-                        purpose=ssl.Purpose.CLIENT_AUTH, cafile=self.ssl.get('cafile'))
-                ctx.load_cert_chain(certfile=self.ssl.get(
-                    'certfile'), keyfile=self.ssl.get('keyfile'))
-                ctx.verify_mode = self.ssl.get(
-                    'verify', ssl.VerifyMode.CERT_NONE)
-                ciphers = self.ssl.get('ciphers')
-                if ciphers:
-                    ctx.set_ciphers(ciphers)
-                self.__connstream = ctx.wrap_socket(
-                    self.__socket, server_side=False)
+        try:
+            if not self.__socket:  # open socket
+                self.__socket = socket.create_connection(
+                    (self.host, int(self.port)), 1)
+                if self.ssl:
+                    import ssl
+                    ctx = ssl.create_default_context(
+                            purpose=ssl.Purpose.CLIENT_AUTH, cafile=self.ssl.get('cafile'))
+                    ctx.load_cert_chain(certfile=self.ssl.get(
+                        'certfile'), keyfile=self.ssl.get('keyfile'))
+                    ctx.verify_mode = self.ssl.get(
+                        'verify', ssl.VerifyMode.CERT_NONE)
+                    ciphers = self.ssl.get('ciphers')
+                    if ciphers:
+                        ctx.set_ciphers(ciphers)
+                    self.__connstream = ctx.wrap_socket(
+                        self.__socket, server_side=False)
 
-        self.debug('sent %s %s %r', self.__socket, len(data), data)
-        # send length followed by data
-        if self.ssl:
-            self.__connstream.write(struct.pack('!L', len(data)))
-            self.__connstream.write(data)
-        else:
-            self.__socket.sendall(struct.pack('!L', len(data)))
-            self.__socket.sendall(data)
+            self.debug('sent %s %s %r', self.__socket, len(data), data)
+            # send length followed by data
+            if self.ssl:
+                self.__connstream.write(struct.pack('!L', len(data)))
+                self.__connstream.write(data)
+            else:
+                self.__socket.sendall(struct.pack('!L', len(data)))
+                self.__socket.sendall(data)
+        except ConnectionRefusedError as e:
+            self.error(f"Could not create a connection to send {event.name} Event. {e}.")
 
     def handle_event(self, event):
         self.send(event)  # send event if we handle it
@@ -386,13 +393,18 @@ def test(*args):
     l = f.start_plugin(TestListener)
     s = f.start_plugin(Sender)
     time.sleep(1)
-    f.event('Sender', foo='bar', sync=True)
-    f.stop_plugin('Sender')
-    f.stop_plugin('Listener')
+    f.event('Sender', foo='tcp1', sync=True)
     while rcvd_event == None:
         time.sleep(1)
-    assert (rcvd_event.name == 'Sender' and rcvd_event.foo == 'bar')
+    assert (rcvd_event.name == 'Sender' and rcvd_event.foo == 'tcp1')
     rcvd_event = None
+    f.event('Sender', foo='tcp2', sync=True)
+    while rcvd_event == None:
+        time.sleep(1)
+    assert (rcvd_event.name == 'Sender' and rcvd_event.foo == 'tcp2')
+    f.stop_plugin('Sender')
+    f.stop_plugin('Listener')
+
 
     class TestChannel(Channel):
         def event(self, event=None):
@@ -402,9 +414,15 @@ def test(*args):
     c1 = f.start_plugin(Channel, name='c1', addr='localhost')
     c2 = f.start_plugin(TestChannel, name='c2', listen='localhost')
     time.sleep(1)
-    f.event('c1', foo='bar', sync=True)
+    rcvd_event = None
+    f.event('c1', foo='udp1', sync=True)
     while rcvd_event == None:
         time.sleep(1)
-    assert (rcvd_event.name == 'c1' and rcvd_event.foo == 'bar')
+    assert (rcvd_event.name == 'c1' and rcvd_event.foo == 'udp1')
+    rcvd_event = None
+    f.event('c1', foo='udp2', sync=True)
+    while rcvd_event == None:
+        time.sleep(1)
+    assert (rcvd_event.name == 'c1' and rcvd_event.foo == 'udp2')
     f.stop()
     f.join()
