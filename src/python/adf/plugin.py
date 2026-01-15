@@ -1,6 +1,7 @@
 from adf import *
 # from adf import * will not make Event available during import of Plugin
 from .event import Event
+from .security_utils import SafeMethodDispatch
 
 '''Plugin object'''
 
@@ -100,10 +101,11 @@ class Plugin(mp.Process):
                 try: 
                     if method == 'config':
                         f = self.__config  # private function so needs special handling
-                    # turn _name info self.name and call with event data
+                    # STIG V-220631: Use safe method dispatch instead of eval()
                     else:
-                        f = eval('self.'+method)
-                        # util function to extract function/args from event data and call it
+                        f = SafeMethodDispatch.get_method(self, method)
+                        if f is None:
+                            raise ValueError(f'Invalid method: {method}')
                     r = f(*args,**kwargs)
                 except Exception as e:
                     r = e
@@ -311,7 +313,13 @@ class Plugin(mp.Process):
 
     def eval_packet(self, x, info, packet):
         '''evaluate x as expression based on a packet
-        all globals and refs to plugin, packet, and info are available'''
+        all globals and refs to plugin, packet, and info are available
+        
+        SECURITY NOTE (STIG V-220631): This method uses eval() for packet filtering.
+        The filter expression 'x' comes from plugin configuration, not network input.
+        Ensure filter expressions are only set by trusted administrators.
+        Future enhancement: implement expression whitelist validation.
+        '''
         try:
             return eval(x, globals(), {'self': self, 'packet': packet, 'info': info})
         except Exception as e:
@@ -319,7 +327,13 @@ class Plugin(mp.Process):
 
     def exec_packet(self, x, info, packet):
         '''like eval_packet, but executes statement x
-        can be used to call plugin methods or modify state, packet or info'''
+        can be used to call plugin methods or modify state, packet or info
+        
+        SECURITY NOTE (STIG V-220631): This method uses exec() for packet manipulation.
+        The statement 'x' comes from plugin configuration, not network input.
+        Ensure exec statements are only set by trusted administrators.
+        Future enhancement: implement statement whitelist validation.
+        '''
         try:
             exec(x, globals(), {'self': self, 'packet': packet, 'info': info})
         except Exception as e:

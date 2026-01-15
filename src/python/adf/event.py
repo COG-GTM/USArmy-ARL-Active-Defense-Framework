@@ -1,4 +1,5 @@
 from adf import *
+from adf.security_utils import SecureEventSerializer
 
 
 class Event(object):
@@ -81,7 +82,8 @@ class Listener(Plugin):
                     while True:
                         try:
                             l = struct.unpack('!L', self.rfile.read(4))[0]
-                            event = pickle.loads(self.rfile.read(l))
+                            # STIG V-220631: Use secure JSON deserialization instead of pickle
+                            event = SecureEventSerializer.deserialize(self.rfile.read(l))
                             event.path.append(self.server.parent.name)
                             self.server.parent.debug(
                                 '%s %s %s', self.client_address, l, event)
@@ -96,7 +98,8 @@ class Listener(Plugin):
                     while True:
                         try:
                             l = struct.unpack('!L', self.request.recv(4))[0]
-                            event = pickle.loads(self.request.recv(l))
+                            # STIG V-220631: Use secure JSON deserialization instead of pickle
+                            event = SecureEventSerializer.deserialize(self.request.recv(l))
                             event.path.append(self.server.parent.name)
                             self.server.parent.debug(
                                 '%s %s %s', self.client_address, l, event)
@@ -151,8 +154,8 @@ class Sender(Plugin):
     ssl = None  # set to config dict to enable TLS mode
 
     def send(self, event):
-        # turn event into a generic dict
-        data = pickle.dumps(event)
+        # STIG V-220631: Use secure JSON serialization instead of pickle
+        data = SecureEventSerializer.serialize(event)
         try:
             if not self.__socket:  # open socket
                 self.__socket = socket.create_connection(
@@ -229,7 +232,8 @@ class Channel(Plugin):
     def handle_event(self, e):
         '''send event on channel'''
         if self.addr:
-            self.send(pickle.dumps(e))  # ensure data is pickle-shaped
+            # STIG V-220631: Use secure JSON serialization instead of pickle
+            self.send(SecureEventSerializer.serialize(e))
 
     def send(self, data):
         i = s = 0
@@ -248,8 +252,8 @@ class Channel(Plugin):
         '''handle received data'''
         # generate event from data
         try:
-            # unpickle
-            e = pickle.loads(
+            # STIG V-220631: Use secure JSON deserialization instead of pickle
+            e = SecureEventSerializer.deserialize(
                 b''.join(v for (k, v) in sorted(self.__buf[addr].items())))
             # set source
             e.path.append(self.name)
