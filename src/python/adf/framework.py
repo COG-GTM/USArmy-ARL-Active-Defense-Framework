@@ -1,4 +1,5 @@
 from adf import *
+from adf.security_utils import SafeMethodDispatch
 
 from pprint import pformat
 
@@ -156,8 +157,8 @@ class Framework(threading.Thread):
                 ipc_ret,method,args,kwargs = self._ipc_req.get(timeout=1)
                 self.__logger.debug('IPC %s(%s %s) -> %s',method,args,kwargs,ipc_ret)
                 try:
-                    f = eval('self.'+method)
-                    r = f(*args,**kwargs)
+                    # STIG V-220631: Use safe method dispatch instead of eval()
+                    r = SafeMethodDispatch.dispatch(self, method, *args, **kwargs)
                 except Exception as e:
                     r = e
                 self.__logger.debug('IPC ret %s %s -> %s',method,r,ipc_ret)
@@ -235,7 +236,8 @@ class Framework(threading.Thread):
                         import logging
                         logging.basicConfig(**log_config)
                     else:  # or a full dictionary for loading modules, etc..
-                        log_config = eval(' '.join(cmd[1:]))
+                        # STIG V-220631: Use json.loads instead of eval() for config parsing
+                        log_config = json.loads(' '.join(cmd[1:]))
                         log_config.update(version=1)
                         import logging.config
                         logging.config.dictConfig(log_config)
@@ -355,7 +357,12 @@ class Framework(threading.Thread):
             for cmd in j:
                 rc = {}
                 for k, args in cmd.items():
-                    m = eval('self.'+k)
+                    # STIG V-220631: Use safe method dispatch instead of eval()
+                    m = SafeMethodDispatch.get_method(self, k)
+                    if m is None:
+                        rc[k] = {'ValueError': [f'Invalid method: {k}']}
+                        self.__logger.warning({k: rc[k]})
+                        continue
                     kwargs = {}
                     for a in args:
                         if type(a) is dict:
