@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 import time
 import subprocess
 import threading
@@ -39,7 +40,7 @@ class process(threading.Thread):
                 rc, retries, start = -1, 0, time.time()
                 while rc:
                     logging.info('%s starting', self.name)
-                    rc = subprocess.run([self.cmd]+self.args).returncode
+                    rc = subprocess.run([self.cmd]+self.args, shell=False).returncode
                     if rc:  # abnormal exit
                         logging.warning('%s exited %s', self.name, rc)
                         retries += 1

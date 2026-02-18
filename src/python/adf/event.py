@@ -54,7 +54,9 @@ special attributes are:
 
     def eval(self, expr):
         '''eval expression with event data as locals'''
-        return eval(expr, globals(), self.__data)
+        restricted_globals = {'__builtins__': {}}
+        restricted_globals.update({k: v for k, v in globals().items() if not k.startswith('_')})
+        return eval(expr, restricted_globals, self.__data)
     # because we override __getattr__ we need these to be able to pickle
     def __getstate__(self): return self.__dict__
     def __setstate__(self, d): self.__dict__.update(d)

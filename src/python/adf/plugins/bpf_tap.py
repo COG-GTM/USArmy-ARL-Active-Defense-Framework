@@ -82,6 +82,7 @@ class bpf_tap(Plugin):
             with open(self.bpf, 'w') as bpf_fh:
                 bpf_fh.write(bpf_text)
             self.debug('%d written to %s' % (len(bpf_text), self.bpf))
-            p = subprocess.Popen(self.command.split())
+            import shlex
+            p = subprocess.Popen(shlex.split(self.command))
             self.debug('%s: %s' % (p.pid, self.command))
             return p.wait()

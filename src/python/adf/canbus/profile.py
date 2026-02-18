@@ -147,7 +147,9 @@ class Alert(Plugin):
                             # provide config vars and stats vars to expression
                             r = None
                             try:
-                                r = eval(expr, self.__config_cache, stats)
+                                restricted_globals = {'__builtins__': {}}
+                                restricted_globals.update({k: v for k, v in self.__config_cache.items() if not k.startswith('_')})
+                                r = eval(expr, restricted_globals, stats)
                             except Exception as e:
                                 self.debug(e, exc_info=True)
                             if r:  # generate event if ~ True
