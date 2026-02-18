@@ -102,7 +102,7 @@ class Plugin(mp.Process):
                         f = self.__config  # private function so needs special handling
                     # turn _name info self.name and call with event data
                     else:
-                        f = eval('self.'+method)
+                        f = getattr(self, method)
                         # util function to extract function/args from event data and call it
                     r = f(*args,**kwargs)
                 except Exception as e:
@@ -313,7 +313,9 @@ class Plugin(mp.Process):
         '''evaluate x as expression based on a packet
         all globals and refs to plugin, packet, and info are available'''
         try:
-            return eval(x, globals(), {'self': self, 'packet': packet, 'info': info})
+            restricted_globals = {'__builtins__': {}}
+            restricted_globals.update({k: v for k, v in globals().items() if not k.startswith('_')})
+            return eval(x, restricted_globals, {'self': self, 'packet': packet, 'info': info})
         except Exception as e:
             self.debug("eval_packet(%s): %r", x, e, exc_info=True)
 
@@ -321,7 +323,9 @@ class Plugin(mp.Process):
         '''like eval_packet, but executes statement x
         can be used to call plugin methods or modify state, packet or info'''
         try:
-            exec(x, globals(), {'self': self, 'packet': packet, 'info': info})
+            restricted_globals = {'__builtins__': {}}
+            restricted_globals.update({k: v for k, v in globals().items() if not k.startswith('_')})
+            exec(x, restricted_globals, {'self': self, 'packet': packet, 'info': info})
         except Exception as e:
             self.debug("exec_packet(%s): %r", x, e, exc_info=True)
 

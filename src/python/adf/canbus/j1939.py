@@ -261,7 +261,9 @@ class J1939Decoder(Plugin):
         x = self.pgn.get(str(info['PGN']))
         if x:
             p = info.setdefault('params', {'PGN': info['PGN']})
-            p.update(eval(x, globals(), {'data': data}))
+            restricted_globals = {'__builtins__': {}}
+            restricted_globals.update({k: v for k, v in globals().items() if not k.startswith('_')})
+            p.update(eval(x, restricted_globals, {'data': data}))
             return p
 
 
@@ -282,7 +284,9 @@ class J1939ParamEncoder(Plugin):
         x = self['pgn.%d' % p['PGN']]
         # modify data[] using p{}
         if x:
-            exec(x, globals(), {'params': p, 'data': data})
+            restricted_globals = {'__builtins__': {}}
+            restricted_globals.update({k: v for k, v in globals().items() if not k.startswith('_')})
+            exec(x, restricted_globals, {'params': p, 'data': data})
             return True
         return False
 

@@ -156,7 +156,7 @@ class Framework(threading.Thread):
                 ipc_ret,method,args,kwargs = self._ipc_req.get(timeout=1)
                 self.__logger.debug('IPC %s(%s %s) -> %s',method,args,kwargs,ipc_ret)
                 try:
-                    f = eval('self.'+method)
+                    f = getattr(self, method)
                     r = f(*args,**kwargs)
                 except Exception as e:
                     r = e
@@ -235,7 +235,8 @@ class Framework(threading.Thread):
                         import logging
                         logging.basicConfig(**log_config)
                     else:  # or a full dictionary for loading modules, etc..
-                        log_config = eval(' '.join(cmd[1:]))
+                        import ast
+                        log_config = ast.literal_eval(' '.join(cmd[1:]))
                         log_config.update(version=1)
                         import logging.config
                         logging.config.dictConfig(log_config)
@@ -355,7 +356,7 @@ class Framework(threading.Thread):
             for cmd in j:
                 rc = {}
                 for k, args in cmd.items():
-                    m = eval('self.'+k)
+                    m = getattr(self, k)
                     kwargs = {}
                     for a in args:
                         if type(a) is dict:
@@ -529,7 +530,9 @@ class Framework(threading.Thread):
     def exec_plugin(self, *code):
         '''Execute code in this context
     plugin methods will be available to code by plugin name (name.method())'''
-        return exec(' '.join(code), globals(), self.__plugins)
+        restricted_globals = {'__builtins__': {}}
+        restricted_globals.update({k: v for k, v in globals().items() if not k.startswith('_')})
+        return exec(' '.join(code), restricted_globals, self.__plugins)
 
     def subscribe(self, p, *subs):
         '''Subscribe plugin to event names, returns subscribed names.
