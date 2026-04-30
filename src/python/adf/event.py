@@ -1,4 +1,5 @@
 from adf import *
+from adf import secure_envelope
 
 
 class Event(object):
@@ -81,12 +82,17 @@ class Listener(Plugin):
                     while True:
                         try:
                             l = struct.unpack('!L', self.rfile.read(4))[0]
-                            event = pickle.loads(self.rfile.read(l))
+                            event = secure_envelope.unwrap_event(self.rfile.read(l))
                             event.path.append(self.server.parent.name)
                             self.server.parent.debug(
                                 '%s %s %s', self.client_address, l, event)
                             # we're not a Plugin instance so we have to call event in the parent
                             self.server.parent.event(event=event)
+                        except secure_envelope.EnvelopeError as e:
+                            self.server.parent.warning(
+                                'rejecting envelope from %s: %s',
+                                self.client_address, e)
+                            break
                         except Exception as e: # likely closed by client
                             self.server.parent.debug(e)
                             break
@@ -96,12 +102,17 @@ class Listener(Plugin):
                     while True:
                         try:
                             l = struct.unpack('!L', self.request.recv(4))[0]
-                            event = pickle.loads(self.request.recv(l))
+                            event = secure_envelope.unwrap_event(self.request.recv(l))
                             event.path.append(self.server.parent.name)
                             self.server.parent.debug(
                                 '%s %s %s', self.client_address, l, event)
                             # we're not a Plugin instance so we have to call event in the parent
                             self.server.parent.event(event=event)
+                        except secure_envelope.EnvelopeError as e:
+                            self.server.parent.warning(
+                                'rejecting envelope from %s: %s',
+                                self.client_address, e)
+                            break
                         except Exception as e: # likely closed by client
                             self.server.parent.debug(e)
                             break
@@ -151,8 +162,8 @@ class Sender(Plugin):
     ssl = None  # set to config dict to enable TLS mode
 
     def send(self, event):
-        # turn event into a generic dict
-        data = pickle.dumps(event)
+        # serialize event as an HMAC-signed JSON envelope
+        data = secure_envelope.wrap_event(event)
         try:
             if not self.__socket:  # open socket
                 self.__socket = socket.create_connection(
@@ -229,7 +240,7 @@ class Channel(Plugin):
     def handle_event(self, e):
         '''send event on channel'''
         if self.addr:
-            self.send(pickle.dumps(e))  # ensure data is pickle-shaped
+            self.send(secure_envelope.wrap_event(e))
 
     def send(self, data):
         i = s = 0
@@ -248,14 +259,17 @@ class Channel(Plugin):
         '''handle received data'''
         # generate event from data
         try:
-            # unpickle
-            e = pickle.loads(
+            # verify HMAC envelope and decode
+            e = secure_envelope.unwrap_event(
                 b''.join(v for (k, v) in sorted(self.__buf[addr].items())))
             # set source
             e.path.append(self.name)
             # send event
             del self.__buf[addr]
             self.event(event=e)
+        except secure_envelope.EnvelopeError as ee:
+            self.warning('rejecting envelope from %s: %s', addr, ee)
+            self.__buf.pop(addr, None)
         except Exception as e:
             self.warning(e, exc_info=True)
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 from adf import *
+from adf import secure_envelope
 from adf.canbus import *
 from adf.canbus.j1939 import J1939EncodeId, J1939DecodeId
 import binascii
 import struct
 import time
-import pickle
 
 
 class Packet(Plugin):
@@ -213,12 +213,14 @@ class Transport(Packet):
         '''handle received data'''
         # generate event from data
         try:
-            # unpickle
-            e = pickle.loads(data)
+            # verify HMAC envelope and decode
+            e = secure_envelope.unwrap_event(bytes(data))
             # set source
             e.path.append(self.name)
             # send event
             self.event(event=e)
+        except secure_envelope.EnvelopeError as ee:
+            self.warning('rejecting envelope from %s: %s', addr, ee)
         except Exception as e:
             self.warning(e, exc_info=True)
 
@@ -259,7 +261,7 @@ class Transport(Packet):
 
     def handle_event(self, e):
         '''send event on channel'''
-        data = pickle.dumps(e)  # ensure data is pickle-shaped
+        data = secure_envelope.wrap_event(e)
         self.send_data(data)
         return True
 
