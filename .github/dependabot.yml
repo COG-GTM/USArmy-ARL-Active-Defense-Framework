@@ -1,0 +1,33 @@
+# Supply-chain pin maintenance (NIST SR-3/SR-4, STIG V-220633).
+# pin: true ensures GitHub Action references are stored as immutable SHAs
+# rather than mutable tags.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    pull-request-branch-name:
+      separator: "-"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      python-deps:
+        patterns:
+          - "*"
