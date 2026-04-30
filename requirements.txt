@@ -12,7 +12,7 @@ dpkt==1.9.8
 
 # Optional extras — customer opts in per deployment profile
 # [mqtt]
-paho-mqtt==2.1.0
+paho-mqtt==1.6.1
 # [tap]
 python-pytun==2.4.1
 # [pcap]
