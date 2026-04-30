@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Local build artifact from setup.py (gcc -o src/python/adf/bpf_tap)
+src/python/adf/bpf_tap
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets & local config (STIG V-220632 — never commit credentials)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+!test/**/*.pem
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Coverage / test artifacts
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Logs / captures
+*.log
+*.pcap
+!test/**/*.pcap
+
+# Type checkers / linters
+.mypy_cache/
+.ruff_cache/
+.pyre/

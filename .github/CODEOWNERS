@@ -1,0 +1,13 @@
+# Default owner for the whole repo — ARL maintainers
+* @USArmyResearchLab
+
+# Security-sensitive paths — require explicit security reviewer.
+# Replace the placeholder with the GitHub team handle used in your deployment
+# (e.g. @USArmyResearchLab/adf-security) when wiring branch protection.
+src/bpf_tap.c               @USArmyResearchLab
+src/python/adf/event.py     @USArmyResearchLab
+src/python/adf/framework.py @USArmyResearchLab
+src/python/adf/plugin.py    @USArmyResearchLab
+src/python/adf/canbus/      @USArmyResearchLab
+SECURITY.md                 @USArmyResearchLab
+.github/                    @USArmyResearchLab
