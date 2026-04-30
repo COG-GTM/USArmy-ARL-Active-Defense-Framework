@@ -24,6 +24,7 @@ Failures during ``unwrap`` raise :class:`EnvelopeError` (or a subclass).
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import json
@@ -49,6 +50,11 @@ _MIN_SECRET_BYTES = 32
 
 # Bounded in-process replay cache: nonce -> insertion timestamp.
 _seen_nonces: Dict[str, int] = {}
+
+# Marker used to round-trip bytes/bytearray values through JSON.  Pickle
+# serialized binary CAN frame payloads natively; JSON cannot, so we encode
+# bytes as ``{"__bytes_b64__": "<base64>"}`` on the wire and decode on read.
+_BYTES_MARKER = "__bytes_b64__"
 
 
 class EnvelopeError(Exception):
@@ -97,6 +103,48 @@ def _get_secret(secret: Optional[bytes] = None) -> bytes:
     return encoded
 
 
+def _encode_binary(obj: Any) -> Any:
+    """Recursively replace bytes/bytearray with a base64 marker dict.
+
+    Lists and tuples are walked element-by-element; tuples collapse to lists
+    (JSON has no tuple type, matching ``json.dumps``' default behavior).
+    Dicts must have string keys, matching the JSON object contract.
+    """
+    if isinstance(obj, (bytes, bytearray, memoryview)):
+        return {_BYTES_MARKER: base64.b64encode(bytes(obj)).decode("ascii")}
+    if isinstance(obj, dict):
+        out: Dict[str, Any] = {}
+        for k, v in obj.items():
+            if not isinstance(k, str):
+                raise EnvelopeSchemaError(
+                    "event payload dicts must have string keys (got %r)" % type(k).__name__
+                )
+            out[k] = _encode_binary(v)
+        return out
+    if isinstance(obj, (list, tuple)):
+        return [_encode_binary(v) for v in obj]
+    return obj
+
+
+def _decode_binary(obj: Any) -> Any:
+    """Inverse of :func:`_encode_binary` — restore base64 markers to bytes."""
+    if isinstance(obj, dict):
+        if len(obj) == 1 and _BYTES_MARKER in obj:
+            raw = obj[_BYTES_MARKER]
+            if not isinstance(raw, str):
+                raise EnvelopeSchemaError("bytes marker payload must be a string")
+            try:
+                return base64.b64decode(raw, validate=True)
+            except (ValueError, TypeError) as e:
+                raise EnvelopeSchemaError(
+                    "bytes marker payload is not valid base64"
+                ) from e
+        return {k: _decode_binary(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_decode_binary(v) for v in obj]
+    return obj
+
+
 def _canonical_bytes(obj: Any) -> bytes:
     return json.dumps(
         obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False
@@ -142,7 +190,7 @@ def wrap(
         "v": ENVELOPE_VERSION,
         "ts": int(time.time()),
         "nonce": secrets.token_hex(NONCE_BYTES),
-        "payload": payload,
+        "payload": _encode_binary(payload),
     }
     body_bytes = _canonical_bytes(body)
     sig = hmac.new(key, body_bytes, hashlib.sha256).hexdigest()
@@ -210,8 +258,11 @@ def unwrap(
     payload = body.get("payload")
     if not isinstance(payload, dict):
         raise EnvelopeSchemaError("payload must be a dict")
-    _validate_schema(payload, schema)
-    return payload
+    decoded = _decode_binary(payload)
+    if not isinstance(decoded, dict):  # pragma: no cover - guarded by isinstance above
+        raise EnvelopeSchemaError("payload must be a dict after decode")
+    _validate_schema(decoded, schema)
+    return decoded
 
 
 # ---------------------------------------------------------------------------
@@ -239,7 +290,12 @@ EVENT_SCHEMA: Dict[str, Any] = {
 
 
 def event_to_payload(event: Any) -> Dict[str, Any]:
-    """Project an ``adf.event.Event`` instance to a JSON-safe dict."""
+    """Project an ``adf.event.Event`` instance to a JSON-safe dict.
+
+    ``data`` is recursively encoded so ``bytes`` / ``bytearray`` payloads
+    (as used by the CAN-bus IBP plugin for raw frame data) survive the
+    JSON round-trip that pickle previously absorbed natively.
+    """
     return {
         "name": str(event.name),
         "path": [str(p) for p in event.path],

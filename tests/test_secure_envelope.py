@@ -182,6 +182,64 @@ def test_event_payload_rejects_unexpected_top_level_key():
         se.unwrap(raw, schema=se.EVENT_SCHEMA)
 
 
+def test_event_round_trip_with_can_frame_bytes():
+    """Regression: pickle handled bytes/bytearray natively; JSON does not.
+
+    Mirrors what ``adf.canbus.IBP.Packet.recv_raw`` produces — an event whose
+    ``data`` is a bytearray of CAN-frame bytes and whose ``control`` is also a
+    bytearray.  Without the binary-encoding shim, ``wrap_event`` would raise
+    ``TypeError`` here.
+    """
+    from adf.event import Event
+    e = Event("can.packet")
+    e["channel"] = 0
+    e["addr"] = 1
+    e["control"] = bytearray(b"\x00\x01\x02")
+    e["data"] = bytearray(b"\x10\x20\x30\x40\x50\x60\x70\x80")
+    raw = se.wrap_event(e)
+    decoded = se.unwrap_event(raw)
+    assert decoded["channel"] == 0
+    assert decoded["addr"] == 1
+    assert decoded["control"] == b"\x00\x01\x02"
+    assert decoded["data"] == b"\x10\x20\x30\x40\x50\x60\x70\x80"
+
+
+def test_nested_bytes_round_trip():
+    payload = {
+        "frames": [
+            bytes([1, 2, 3]),
+            bytearray(b"\xde\xad\xbe\xef"),
+            {"chunk": memoryview(b"\xff" * 5)},
+        ],
+        "scalar": b"x",
+        "name": "ok",
+    }
+    raw = se.wrap(payload)
+    decoded = se.unwrap(raw)
+    assert decoded["frames"][0] == b"\x01\x02\x03"
+    assert decoded["frames"][1] == b"\xde\xad\xbe\xef"
+    assert decoded["frames"][2]["chunk"] == b"\xff\xff\xff\xff\xff"
+    assert decoded["scalar"] == b"x"
+    assert decoded["name"] == "ok"
+
+
+def test_unwrap_rejects_invalid_base64_marker():
+    raw = se.wrap({"x": b"hi"})
+    env = json.loads(raw.decode("utf-8"))
+    env["body"]["payload"]["x"][se._BYTES_MARKER] = "not valid base64!!"
+    body_bytes = json.dumps(env["body"], sort_keys=True, separators=(",", ":")).encode()
+    import hashlib
+    import hmac
+    env["sig"] = hmac.new(SECRET, body_bytes, hashlib.sha256).hexdigest()
+    with pytest.raises(se.EnvelopeSchemaError):
+        se.unwrap(json.dumps(env).encode("utf-8"))
+
+
+def test_non_string_dict_keys_rejected_at_wrap():
+    with pytest.raises(se.EnvelopeSchemaError):
+        se.wrap({1: "value"})  # type: ignore[dict-item]
+
+
 def test_replay_cache_purges_old_entries():
     raw = se.wrap({"x": 1})
     se.unwrap(raw)
