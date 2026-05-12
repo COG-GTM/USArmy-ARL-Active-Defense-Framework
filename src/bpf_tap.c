@@ -100,12 +100,12 @@ int tun_alloc(char *dev, int flags) {
 
 
 //reports error and bails
-void pcap_error(int err,char *iface){
+void pcap_error(int err, const char *iface){
 	fprintf(stderr,"%s: %s %s\n",iface,pcap_statustostr(err),ebuf);
 	exit(1);
 }
 
-void error(char *msg, char *iface){
+void error(const char *msg, const char *iface){
 	fprintf(stderr,"%s %s: %s\n",msg,iface,strerror(errno));
 	exit(1);
 }
