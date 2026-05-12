@@ -168,7 +168,7 @@ void *TapReader(void *args){
 }
 
 
-int read_file(char **buffer, char *filename){
+int read_file(char **buffer, const char *filename){
 	//read filename into buffer, return size of buffer
 	int size = 0; 
 	FILE *fp = fopen(filename,"rb");
