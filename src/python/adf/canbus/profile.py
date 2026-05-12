@@ -146,10 +146,17 @@ class Alert(Plugin):
                         if expr:
                             # provide config vars and stats vars to expression
                             r = None
-                            try:
-                                r = eval(expr, self.__config_cache, stats)
-                            except Exception as e:
-                                self.debug(e, exc_info=True)
+                            # F-005: refuse eval of profile-supplied
+                            # expressions unless the operator opted in.
+                            if not security.allow_exec():
+                                self.debug(
+                                    'profile eval refused '
+                                    '(ADF_ALLOW_EXEC=0): %r', expr)
+                            else:
+                                try:
+                                    r = eval(expr, self.__config_cache, stats)
+                                except Exception as e:
+                                    self.debug(e, exc_info=True)
                             if r:  # generate event if ~ True
                                 # if we get a dict, update the stats
                                 if type(r) is dict:

@@ -1,10 +1,14 @@
 import subprocess
 from setuptools import find_packages, setup
 
+# F-021: build the bpf_tap helper with list args + shell=False so the build
+# step cannot be hijacked through shell metacharacters in the environment.
 print(subprocess.run(
-    "gcc -o src/python/adf/bpf_tap src/bpf_tap.c -lpcap -pthread",
-    shell=True,
-    capture_output=True
+    ["gcc", "-o", "src/python/adf/bpf_tap",
+     "src/bpf_tap.c", "-lpcap", "-pthread"],
+    shell=False,
+    check=False,
+    capture_output=True,
 ))
 
 install_requires = [
@@ -16,7 +20,9 @@ extras_require = {
     'mqtt':    ["paho-mqtt"],
     'tap':     ["python-pytun"],
     'pcap':    ["pcap-ct"],
-    'can':     ['python-can', 'cantools'],
+    # F-025: floor `diskcache` above the vulnerable transitive version
+    # pulled in by `cantools`.
+    'can':     ['python-can', 'cantools', 'diskcache>=5.6.4'],
     'nfqueue': ['netfilterqueue']
 }
 # flatten all extra requirement into the all option

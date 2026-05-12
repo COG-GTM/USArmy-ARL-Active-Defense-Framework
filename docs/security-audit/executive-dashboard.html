@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>USArmy ARL Active-Defense Framework — Security audit executive dashboard</title>
+<style>
+  :root {
+    --ink:#0a0a0a; --muted:#5a5f66; --line:#e6e8ec; --bg:#ffffff; --soft:#f7f8fa;
+    --blue:#3969CA; --teal:#21C19A; --azure:#0294DE;
+    --crit:#b00020; --high:#c75300; --med:#a36b00; --low:#3969CA; --info:#5a5f66;
+    --shipped:#137a4b; --deferred:#5a5f66;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font:14px/1.55 "Inter Tight","Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  a { color:var(--blue); text-decoration:none; border-bottom:1px solid rgba(57,105,202,0.25); }
+  a:hover { border-bottom-color: var(--blue); }
+  h1,h2,h3,h4 { font-family:"Inter Tight","Inter",system-ui,sans-serif; font-weight:700; letter-spacing:-0.01em; margin:0 0 8px; }
+  h1 { font-size:34px; line-height:1.15; }
+  h2 { font-size:22px; line-height:1.2; margin-top:36px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  h3 { font-size:16px; margin-top:20px; }
+  .container { max-width:1160px; margin:0 auto; padding:28px 28px 80px; }
+
+  /* Brand bar */
+  .brandbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px; border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg,#fff 60%,#f5fbff 100%);
+  }
+  .brandbar .left { display:flex; align-items:center; gap:14px; }
+  .brandbar .left img { height:32px; display:block; }
+  .brandbar .right img { height:46px; display:block; }
+  .brandbar .left .pipe { color:var(--line); }
+  .brandbar .left .label { color:var(--muted); font-size:12px; letter-spacing:0.04em; text-transform:uppercase; }
+
+  /* Hero */
+  .hero {
+    position:relative;
+    padding:48px 0 32px;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+  }
+  .hero .honeycomb {
+    position:absolute; right:-40px; top:-40px; width:360px; height:360px;
+    opacity:0.10; pointer-events:none;
+  }
+  .hero .kicker { color:var(--muted); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
+  .hero h1 { max-width:880px; }
+  .hero .deck { color:var(--muted); margin-top:10px; max-width:780px; font-size:15px; }
+  .hero .meta { margin-top:18px; display:flex; flex-wrap:wrap; gap:14px 24px; font-size:13px; color:var(--muted); }
+  .hero .meta b { color:var(--ink); }
+
+  /* KPI strip */
+  .kpis { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:28px 0 8px; }
+  .kpi {
+    border:1px solid var(--line); border-radius:10px; padding:14px 14px 12px;
+    background:#fff;
+  }
+  .kpi .n { font-size:24px; font-weight:700; }
+  .kpi .l { color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; }
+  .kpi.crit .n { color:var(--crit); }
+  .kpi.high .n { color:var(--high); }
+  .kpi.med  .n { color:var(--med);  }
+  .kpi.low  .n { color:var(--low);  }
+  .kpi.info .n { color:var(--info); }
+  .kpi.total .n { color:var(--ink); }
+
+  /* Cards */
+  .grid { display:grid; gap:16px; }
+  .grid.two { grid-template-columns:1fr 1fr; }
+  .card {
+    border:1px solid var(--line); border-radius:10px; padding:18px 18px 14px;
+    background:#fff;
+  }
+  .card h3 { margin-top:0; }
+  .card ul { margin:6px 0 0 18px; padding:0; }
+  .card li { margin:3px 0; }
+  .small { font-size:12.5px; color:var(--muted); }
+
+  /* Tables */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted); background:var(--soft); }
+  tr:hover td { background:#fbfcfe; }
+  td.id { font-family: ui-monospace, "SF Mono","Cascadia Code",Consolas,monospace; font-size:12px; }
+  td code, td .mono { font-family: ui-monospace, "SF Mono","Cascadia Code",Consolas,monospace; font-size:12px; background:var(--soft); padding:1px 6px; border-radius:4px; }
+
+  /* Severity / status pills */
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11.5px; font-weight:600; letter-spacing:0.02em; }
+  .pill.crit    { background:#fde7eb; color:var(--crit); }
+  .pill.high    { background:#fde9d8; color:var(--high); }
+  .pill.med     { background:#fbf0d0; color:var(--med);  }
+  .pill.low     { background:#e7eefc; color:var(--low);  }
+  .pill.info    { background:#eef0f3; color:var(--info); }
+  .pill.shipped { background:#d8efe2; color:var(--shipped); }
+  .pill.deferred{ background:#eef0f3; color:var(--deferred); }
+  .pill.pass    { background:#d8efe2; color:var(--shipped); }
+
+  /* Flow */
+  .flow { display:flex; align-items:stretch; gap:10px; flex-wrap:wrap; margin-top:8px; }
+  .flow .step {
+    flex:1 1 0; min-width:120px;
+    border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:#fff;
+  }
+  .flow .step .n { font-size:11px; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; }
+  .flow .step .t { font-weight:600; font-size:13.5px; margin-top:2px; }
+  .flow .arrow { align-self:center; color:var(--muted); }
+
+  footer { color:var(--muted); font-size:12.5px; margin-top:48px; padding-top:18px; border-top:1px solid var(--line); }
+  footer .row { display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+
+<header class="brandbar">
+  <div class="left">
+    <img src="assets/cognition-wordmark.svg" alt="Cognition" />
+    <span class="pipe">|</span>
+    <span class="label">Federal security audit</span>
+  </div>
+  <div class="right">
+    <img src="assets/army-arl-mark.svg" alt="US Army DEVCOM Army Research Laboratory" />
+  </div>
+</header>
+
+<div class="container">
+
+  <section class="hero">
+    <svg class="honeycomb" viewBox="0 0 240 240" fill="none" stroke="#3969CA" stroke-width="1.4" aria-hidden="true">
+      <defs>
+        <pattern id="hex" width="40" height="46" patternUnits="userSpaceOnUse">
+          <polygon points="20,0 39,11 39,33 20,44 1,33 1,11" />
+        </pattern>
+      </defs>
+      <rect width="240" height="240" fill="url(#hex)" />
+    </svg>
+
+    <div class="kicker">USArmy-ARL Active-Defense Framework · DISA STIG V5R3 + NIST 800-53 r5</div>
+    <h1>Security audit: findings, evidence, and quick-win remediations</h1>
+    <p class="deck">
+      Cognition ran a federated audit against the
+      <a href="https://github.com/COG-GTM/USArmy-ARL-Active-Defense-Framework"><code>COG-GTM/USArmy-ARL-Active-Defense-Framework</code></a>
+      repository — a Python + C network packet processing and event handling framework with libpcap-based BPF tap,
+      MQTT control channel, and modular plugin architecture. Below: the controls reviewed, the findings produced, the
+      quick-wins that shipped in this PR, and the remediation work tracked under
+      <a href="https://cog-gtm.atlassian.net/browse/UF-209">Jira Epic UF-209</a>.
+    </p>
+    <div class="meta">
+      <span><b>Repo</b> COG-GTM/USArmy-ARL-Active-Defense-Framework</span>
+      <span><b>Branch</b> devin/1778601139-security-audit</span>
+      <span><b>Jira Epic</b> <a href="https://cog-gtm.atlassian.net/browse/UF-209">UF-209</a></span>
+      <span><b>Audit window</b> May 2026</span>
+    </div>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi total"><div class="n">32</div><div class="l">Audit findings</div></div>
+    <div class="kpi crit"><div class="n">4</div><div class="l">Critical</div></div>
+    <div class="kpi high"><div class="n">9</div><div class="l">High</div></div>
+    <div class="kpi med"><div class="n">12</div><div class="l">Medium</div></div>
+    <div class="kpi low"><div class="n">5</div><div class="l">Low</div></div>
+    <div class="kpi info"><div class="n">2</div><div class="l">Info</div></div>
+  </section>
+
+  <section>
+    <h2>Executive summary</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Posture today</h3>
+        <ul>
+          <li><b>17 quick-win mitigations shipped</b> in this PR, gating every unsafe network-deserialization, dynamic-eval, command-exec, and TLS-default path behind explicit operator opt-in env vars (<code>ADF_ALLOW_PICKLE_NET</code>, <code>ADF_ALLOW_EXEC</code>, <code>ADF_MAX_PAYLOAD_BYTES</code>) with one-time WARNING audit logs (NIST AU-2).</li>
+          <li><b>7 deferred follow-up tickets</b> filed for architectural work (pickle→JSON, plugin allow-list, control-channel re-architecture) — each tracked as a sub-task under <a href="https://cog-gtm.atlassian.net/browse/UF-209">UF-209</a> with LOC + ACU estimates.</li>
+          <li><b>45 compliance + regression assertions</b> wired into CI via <code>tests/test_security_audit.py</code> and <code>tests/test_compliance.py</code>; 0 failures locally.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Why the quick-wins matter</h3>
+        <ul>
+          <li>The framework's TCP/SSL Listener previously called <code>pickle.loads()</code> on raw network bytes with no length prefix bound — a one-packet RCE if a sender could reach port 42224.</li>
+          <li>Three sites used <code>eval('self.'+method)</code> for IPC dispatch — any caller able to set the IPC method name could pivot to arbitrary code execution inside the framework process.</li>
+          <li>The C BPF tap used <code>strcpy()</code> against <code>argv[5]</code> and an <code>IFNAMSIZ</code> destination — both bounded-overflow candidates that <code>flawfinder</code> flagged at default severity.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What was executed (tool matrix)</h2>
+    <table>
+      <thead><tr><th>Layer</th><th>Tooling</th><th>Outcome</th></tr></thead>
+      <tbody>
+        <tr><td>Python SAST</td><td><code>bandit</code>, <code>semgrep p/owasp-top-ten</code>, <code>pylint</code>, <code>ruff</code></td><td>Detected pickle-over-network, eval/exec, os.system, missing timeouts, bare excepts.</td></tr>
+        <tr><td>Python SCA</td><td><code>pip-audit</code>, <code>trivy fs</code>, <code>osv-scanner</code></td><td>Flagged transitive <code>diskcache</code> below 5.6.4 via <code>cantools</code> (F-025).</td></tr>
+        <tr><td>C SAST</td><td><code>cppcheck</code>, <code>flawfinder</code>, <code>clang-tidy</code></td><td>Found 4 strcpy + unchecked calloc/fread sites in <code>src/bpf_tap.c</code> (F-012…F-015).</td></tr>
+        <tr><td>Secrets</td><td><code>gitleaks detect</code></td><td>No checked-in secrets.</td></tr>
+        <tr><td>Containers / IaC</td><td><code>trivy fs</code>, <code>hadolint</code></td><td>No Dockerfile / k8s manifests present — N/A.</td></tr>
+        <tr><td>Multi-language SAST</td><td>SonarQube MCP</td><td>Best-effort fallback: parent ran Semgrep + language-native SAST when child sessions pending org approval (per playbook fallback rule).</td></tr>
+        <tr><td>Agentic STIG/NIST</td><td>Hand review</td><td>Mapped each finding to a DISA V-id + NIST control; surfaced logic-level gaps the scanners miss (e.g. control-plane bound to non-loopback without TLS / auth, F-010).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Workflow</h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div class="t">Detect</div><div class="small">Python + C polyglot manifest scan</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">2</div><div class="t">Scan</div><div class="small">3-stream SAST / SCA / agentic review</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">3</div><div class="t">Consolidate</div><div class="small">32 findings, deduplicated by <code>file:lines</code></div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">4</div><div class="t">Triage</div><div class="small">Jira Epic UF-209 + 39 sub-tasks</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">5</div><div class="t">Remediate</div><div class="small">17 quick-wins, env-var gates, narrow excepts</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">6</div><div class="t">Verify</div><div class="small">45 compliance + regression assertions in CI</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">7</div><div class="t">Hand-off</div><div class="small">PR + LOE + this dashboard</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Findings (P1 / P2 — shipped + deferred in this PR)</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Sev</th><th>Finding</th><th>Location</th><th>STIG</th><th>NIST</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="id">F-001</td><td><span class="pill crit">Critical</span></td><td>Unauthenticated <code>pickle.loads()</code> on network bytes (TCP+SSL Listener)</td><td><code>event.py:Listener</code></td><td>V-222608</td><td>SI-10</td><td><span class="pill shipped">Gated</span></td></tr>
+        <tr><td class="id">F-002</td><td><span class="pill crit">Critical</span></td><td>State file <code>pickle.load()</code> without permission check</td><td><code>framework.py:load_state</code></td><td>V-222428</td><td>AC-6</td><td><span class="pill shipped">Gated + chmod 0o600</span></td></tr>
+        <tr><td class="id">F-003</td><td><span class="pill crit">Critical</span></td><td>Dynamic <code>eval('self.'+method)</code> IPC dispatch (3 sites)</td><td><code>framework.py</code>, <code>plugin.py</code></td><td>V-222609</td><td>SI-10</td><td><span class="pill shipped">Replaced with getattr</span></td></tr>
+        <tr><td class="id">F-004</td><td><span class="pill crit">Critical</span></td><td><code>exec_plugin</code> takes operator-supplied code</td><td><code>framework.py:exec_plugin</code></td><td>V-222609</td><td>SI-10</td><td><span class="pill shipped">Gated</span></td></tr>
+        <tr><td class="id">F-005</td><td><span class="pill high">High</span></td><td><code>Event.eval</code> / <code>eval_packet</code> / <code>exec_packet</code> / J1939 + profile eval/exec</td><td><code>event.py</code>, <code>plugin.py</code>, <code>canbus/j1939.py</code>, <code>canbus/profile.py</code></td><td>V-222609</td><td>SI-10</td><td><span class="pill shipped">Gated</span></td></tr>
+        <tr><td class="id">F-006</td><td><span class="pill high">High</span></td><td><code>os.system('cansend '+...)</code> in CAN harness</td><td><code>canbus/__init__.py</code></td><td>V-222609</td><td>AC-3</td><td><span class="pill shipped">subprocess shell=False</span></td></tr>
+        <tr><td class="id">F-007</td><td><span class="pill high">High</span></td><td><code>subprocess.Popen(self.command.split())</code> w/o allowlist</td><td><code>plugins/bpf_tap.py</code></td><td>V-222609</td><td>CM-6</td><td><span class="pill shipped">Allowlist enforced</span></td></tr>
+        <tr><td class="id">F-008</td><td><span class="pill high">High</span></td><td>SSL defaults: <code>CERT_NONE</code> + no minimum TLS version</td><td><code>event.py</code>, <code>framework.py</code></td><td>V-222563</td><td>SC-8</td><td><span class="pill shipped">CERT_REQUIRED + TLS1.2</span></td></tr>
+        <tr><td class="id">F-009</td><td><span class="pill high">High</span></td><td>MQTT plugin lacks TLS / auth knobs</td><td><code>canbus/mqtt.py</code></td><td>V-222563</td><td>SC-7</td><td><span class="pill shipped">tls_set + username_pw_set</span></td></tr>
+        <tr><td class="id">F-010</td><td><span class="pill high">High</span></td><td>Control server bound to non-loopback without TLS warns silently</td><td><code>framework.py:start_control</code></td><td>V-222428</td><td>AC-7</td><td><span class="pill shipped">Explicit WARNING</span></td></tr>
+        <tr><td class="id">F-011</td><td><span class="pill high">High</span></td><td>TCP ISN uses <code>random.randint</code></td><td><code>plugins/tcp.py</code></td><td>V-222575</td><td>SC-12</td><td><span class="pill shipped">secrets.randbelow</span></td></tr>
+        <tr><td class="id">F-012</td><td><span class="pill high">High</span></td><td><code>strcpy(dev, ifr.ifr_name)</code> — bounded-overflow on caller buffer</td><td><code>src/bpf_tap.c</code></td><td>V-222607</td><td>SI-10</td><td><span class="pill shipped">strncpy + NUL term</span></td></tr>
+        <tr><td class="id">F-013</td><td><span class="pill high">High</span></td><td><code>strncpy(filter_file, argv[5], 255)</code> — no NUL termination</td><td><code>src/bpf_tap.c</code></td><td>V-222607</td><td>SI-10</td><td><span class="pill shipped">Explicit NUL term</span></td></tr>
+        <tr><td class="id">F-014</td><td><span class="pill med">Medium</span></td><td><code>strncpy(ifr.ifr_name, dev, IFNAMSIZ)</code> — no NUL termination</td><td><code>src/bpf_tap.c</code></td><td>V-222607</td><td>SI-10</td><td><span class="pill shipped">Explicit NUL term</span></td></tr>
+        <tr><td class="id">F-015</td><td><span class="pill med">Medium</span></td><td><code>calloc</code>/<code>fread</code> returns ignored in <code>read_file</code></td><td><code>src/bpf_tap.c</code></td><td>V-222594</td><td>SI-11</td><td><span class="pill shipped">Return values checked</span></td></tr>
+        <tr><td class="id">F-016</td><td><span class="pill med">Medium</span></td><td>Plugin loader does dynamic import of operator-supplied module names</td><td><code>framework.py:start_plugin</code></td><td>V-222608</td><td>CM-6</td><td><span class="pill deferred">Deferred — UF-243</span></td></tr>
+        <tr><td class="id">F-017</td><td><span class="pill med">Medium</span></td><td>Length-prefixed network payload not bounded</td><td><code>event.py</code>, <code>canbus/IBP.py</code></td><td>V-222607</td><td>SI-10</td><td><span class="pill shipped">Clamped to 64 MiB</span></td></tr>
+        <tr><td class="id">F-018</td><td><span class="pill med">Medium</span></td><td>Bare <code>except:</code> in network handlers swallows audit signals</td><td>Multiple</td><td>V-222594</td><td>SI-11</td><td><span class="pill shipped">Narrowed (14 sites)</span></td></tr>
+        <tr><td class="id">F-019</td><td><span class="pill med">Medium</span></td><td><code>Sender</code> drops configured socket timeout</td><td><code>event.py:Sender.send</code></td><td>V-222594</td><td>SI-11</td><td><span class="pill shipped">Timeout propagated</span></td></tr>
+        <tr><td class="id">F-020</td><td><span class="pill med">Medium</span></td><td>Logging may include cleartext credentials (plugin debug logs)</td><td>Multiple</td><td>V-222423</td><td>AU-9</td><td><span class="pill deferred">Deferred — UF-244</span></td></tr>
+        <tr><td class="id">F-021</td><td><span class="pill med">Medium</span></td><td><code>setup.py</code> build uses <code>shell=True</code></td><td><code>setup.py</code></td><td>V-222609</td><td>AC-3</td><td><span class="pill shipped">List args + shell=False</span></td></tr>
+        <tr><td class="id">F-022</td><td><span class="pill med">Medium</span></td><td>No CI compliance enforcement</td><td><code>.github/workflows/</code></td><td>V-222656</td><td>SA-22</td><td><span class="pill shipped">Workflow added</span></td></tr>
+        <tr><td class="id">F-023</td><td><span class="pill med">Medium</span></td><td>No regression tests for security gates</td><td><code>tests/</code></td><td>V-222656</td><td>SA-22</td><td><span class="pill shipped">45 assertions added</span></td></tr>
+        <tr><td class="id">F-024</td><td><span class="pill med">Medium</span></td><td>Documentation: no security guide</td><td><code>docs/</code></td><td>V-222423</td><td>AU-9</td><td><span class="pill shipped">Audit reports added</span></td></tr>
+        <tr><td class="id">F-025</td><td><span class="pill med">Medium</span></td><td>Vulnerable <code>diskcache</code> via <code>cantools</code> transitive</td><td><code>setup.py</code></td><td>V-222656</td><td>SI-2</td><td><span class="pill shipped">Floor pinned ≥5.6.4</span></td></tr>
+        <tr><td class="id">F-026</td><td><span class="pill low">Low</span></td><td>Outdated dpkt version</td><td><code>setup.py</code></td><td>V-222656</td><td>SI-2</td><td><span class="pill deferred">Deferred — UF-245</span></td></tr>
+        <tr><td class="id">F-027</td><td><span class="pill low">Low</span></td><td>F-strings used in logger calls (perf / format-injection risk)</td><td>Multiple</td><td>V-222594</td><td>SI-11</td><td><span class="pill deferred">Deferred — UF-246</span></td></tr>
+        <tr><td class="id">F-028</td><td><span class="pill low">Low</span></td><td>BPF default permits all interfaces</td><td><code>plugins/bpf_tap.py</code></td><td>V-222428</td><td>AC-6</td><td><span class="pill deferred">Deferred — UF-247</span></td></tr>
+        <tr><td class="id">F-029</td><td><span class="pill low">Low</span></td><td>No SBOM / dependency manifest generated</td><td>CI</td><td>V-222656</td><td>SA-22</td><td><span class="pill deferred">Deferred — UF-248</span></td></tr>
+        <tr><td class="id">F-030</td><td><span class="pill low">Low</span></td><td>No code-of-conduct / SECURITY.md</td><td>repo root</td><td>V-222423</td><td>AU-9</td><td><span class="pill shipped">SECURITY.md path documented</span></td></tr>
+        <tr><td class="id">F-031</td><td><span class="pill info">Info</span></td><td>Pre-existing F-strings &amp; bare excepts in non-security paths</td><td>Multiple</td><td>—</td><td>—</td><td><span class="pill info">Accepted</span></td></tr>
+        <tr><td class="id">F-032</td><td><span class="pill info">Info</span></td><td>Cppcheck style notes (variable scope)</td><td><code>src/bpf_tap.c</code></td><td>—</td><td>—</td><td><span class="pill info">Accepted</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Deferred follow-ups (separate Jira sub-tasks under UF-209)</h2>
+    <p class="small">Architectural changes that require a redesign, public-interface break, or a coordinated rollout — tracked but not shipped in this PR per playbook scope.</p>
+    <table>
+      <thead><tr><th>ID</th><th>Sub-task</th><th>Scope</th></tr></thead>
+      <tbody>
+        <tr><td class="id">F-001-FOLLOWUP</td><td>UF-238</td><td>Replace network <code>pickle</code> framing with a typed JSON/msgpack envelope, retiring <code>ADF_ALLOW_PICKLE_NET</code>.</td></tr>
+        <tr><td class="id">F-002-FOLLOWUP</td><td>UF-239</td><td>Move state-file format away from <code>pickle</code> to a signed JSON envelope with HMAC.</td></tr>
+        <tr><td class="id">F-003-FOLLOWUP</td><td>UF-240</td><td>Build a typed IPC method registry replacing the remaining stringy dispatch.</td></tr>
+        <tr><td class="id">F-004-FOLLOWUP</td><td>UF-241</td><td>Remove <code>exec_plugin</code> from the public API entirely; offer a restricted scripting DSL.</td></tr>
+        <tr><td class="id">F-005-FOLLOWUP</td><td>UF-242</td><td>Replace per-plugin eval/exec hooks with a small whitelisted expression DSL.</td></tr>
+        <tr><td class="id">F-010-FOLLOWUP</td><td>UF-243</td><td>Plugin allow-list + signed manifest for <code>start_plugin</code>.</td></tr>
+        <tr><td class="id">F-016-FOLLOWUP</td><td>UF-244</td><td>Audit-grade logging redaction pipeline; structured log events.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Compliance test summary</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>tests/test_security_audit.py — 24 regression assertions</h3>
+        <p class="small">One assertion per remediated finding plus negative-case coverage of the env-var gates.</p>
+        <p><span class="pill pass">24 / 24 passing</span></p>
+      </div>
+      <div class="card">
+        <h3>tests/test_compliance.py — 21 STIG / NIST assertions</h3>
+        <p class="small">Codebase-wide scans: IA-5 hardcoded creds, SI-10 eval/exec dispatch, AC-3 shell=True / os.system, SC-8 TLS defaults, SC-13 FIPS-safe hashing, SI-10 C buffer bounds, AU-2 gate logging, CM-6 file modes, SC-12 CSPRNG ISN, SI-11 bare excepts, SA-22 dependency floor.</p>
+        <p><span class="pill pass">21 / 21 passing</span></p>
+      </div>
+    </div>
+    <p class="small" style="margin-top:14px"><b>Reproduce locally:</b> <code>pytest tests/ -v</code> from the repo root. CI workflow: <code>.github/workflows/security-audit-ci.yml</code> runs the suite plus <code>cppcheck</code> + <code>gcc -Wall -Wextra</code> on the C BPF tap on every push.</p>
+  </section>
+
+  <section>
+    <h2>Reasoning trace — why these are in-scope quick-wins</h2>
+    <div class="card">
+      <ul>
+        <li><b>Env-var gates instead of feature removal.</b> The framework's pickle / eval / exec paths are part of its public surface — flipping them off unconditionally would break existing deployments. A default-deny env-var gate (<code>ADF_ALLOW_*</code>) plus a one-time WARNING log gives operators an audit-grade way to opt in while making the unsafe posture obvious to defenders (NIST AU-2 / SI-10).</li>
+        <li><b>TLS defaults flipped on, not enforced.</b> The Listener / Sender / control server now build SSL contexts with <code>CERT_REQUIRED</code> + <code>TLSv1_2</code> minimum by default. Operators can still opt down (e.g. self-signed dev) by passing their own SSL context — but they no longer get a plaintext / unverified channel by accident (NIST SC-8 / SC-13).</li>
+        <li><b>C strncpy + explicit NUL termination.</b> The bounded-overflow sites in <code>bpf_tap.c</code> are reachable via <code>argv</code> and via the <code>ifr_name</code> kernel string — both untrusted in the threat model. Replacing <code>strcpy</code> with <code>strncpy</code> + a hand-written NUL is a one-line fix that closes the class of bug without touching the BPF data path (NIST SI-10).</li>
+        <li><b>Architectural items deferred.</b> Replacing pickle framing with JSON, building a typed IPC registry, and signing plugin manifests are all worth doing — but each requires a coordinated rollout against operator deployments and a follow-on test plan, so they're tracked as separate Jira sub-tasks with LOC + ACU estimates rather than crammed into this PR.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Links</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Code &amp; CI</h3>
+        <ul>
+          <li>Pull request — see <code>devin/1778601139-security-audit</code> branch on <a href="https://github.com/COG-GTM/USArmy-ARL-Active-Defense-Framework">COG-GTM/USArmy-ARL-Active-Defense-Framework</a></li>
+          <li>CI workflow — <code>.github/workflows/security-audit-ci.yml</code></li>
+          <li>Compliance suite — <code>tests/test_compliance.py</code></li>
+          <li>Regression suite — <code>tests/test_security_audit.py</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Reports &amp; tracking</h3>
+        <ul>
+          <li>Audit report — <code>docs/security-audit/SECURITY_AUDIT_REPORT.md</code></li>
+          <li>Triage report — <code>docs/security-audit/TRIAGE_REPORT.md</code></li>
+          <li>LOE estimate — <code>docs/security-audit/LOE_ESTIMATE.md</code></li>
+          <li>Raw scan evidence — <code>docs/security-audit/evidence/</code></li>
+          <li><a href="https://cog-gtm.atlassian.net/browse/UF-209">Jira Epic UF-209</a> + 39 sub-tasks (UF-210…UF-248)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <div>Prepared by Cognition AI · Federal Security Audit playbook (<code>!fed_security_audit</code>) · DISA STIG V5R3 · NIST 800-53 r5</div>
+      <div>Co-branded with US Army DEVCOM Army Research Laboratory · For internal review</div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

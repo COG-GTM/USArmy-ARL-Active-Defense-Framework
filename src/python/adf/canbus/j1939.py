@@ -261,6 +261,12 @@ class J1939Decoder(Plugin):
         x = self.pgn.get(str(info['PGN']))
         if x:
             p = info.setdefault('params', {'PGN': info['PGN']})
+            # F-005: refuse eval of profile-supplied expressions unless
+            # the operator opted in.
+            if not security.allow_exec():
+                self.debug(
+                    'J1939 eval refused (ADF_ALLOW_EXEC=0): %r', x)
+                return p
             p.update(eval(x, globals(), {'data': data}))
             return p
 
@@ -282,6 +288,12 @@ class J1939ParamEncoder(Plugin):
         x = self['pgn.%d' % p['PGN']]
         # modify data[] using p{}
         if x:
+            # F-005: refuse exec of profile-supplied code unless the
+            # operator opted in.
+            if not security.allow_exec():
+                self.debug(
+                    'J1939 exec refused (ADF_ALLOW_EXEC=0): %r', x)
+                return False
             exec(x, globals(), {'params': p, 'data': data})
             return True
         return False

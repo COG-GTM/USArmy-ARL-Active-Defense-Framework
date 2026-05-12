@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.70.0"
+  },
+  "ReportID": "019e1ce7-b00b-74f4-8ca8-215fbb735b0b",
+  "CreatedAt": "2026-05-12T15:56:46.475326992Z",
+  "ArtifactID": "sha256:f50ade3d456acd556ff2961e4c354801e33fa48a22e1cfa70dbe671ddb7f44d1",
+  "ArtifactName": ".",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "RepoURL": "https://github.com/COG-GTM/USArmy-ARL-Active-Defense-Framework.git",
+    "Branch": "devin/1778601139-security-audit",
+    "Commit": "e93e19d5503c6a864cc169a7cbfe539417ad0ce0",
+    "CommitMsg": "event.Listener  - EventSocket.handle now has handler in while loop to handle multiple events per TCP or SSL connection.\nAdded try-except block to Sender.send for catching exceptions raised when failing to connect to Listener.",
+    "Author": "tparker \u003ctravis.w.parker16.ctr@army.mil\u003e",
+    "Committer": "tparker \u003ctravis.w.parker16.ctr@army.mil\u003e"
+  }
+}

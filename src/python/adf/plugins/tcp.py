@@ -1,7 +1,7 @@
 from adf import *
 import dpkt
+import secrets
 import socket
-import random
 
 
 class TCP(Plugin):
@@ -63,8 +63,10 @@ class TCP(Plugin):
         # establish new conn on SYN
         if info['flags'] & dpkt.tcp.TH_SYN:
             # store ISN and generate a random one for our end
+            # F-011: use a CSPRNG for the TCP ISN so the fake stack's
+            # sequence numbers are not predictable.
             self.conns[key] = [info['seq'] + 1,
-                               random.randint(1, 2**32 - 1), [], []]
+                               secrets.randbelow(2**32 - 1) + 1, [], []]
             # generate reply with SYN+ACK, seq=our ISN-1, ack=remote ISN+1
             # (we just ignore the last ACK of the handshake, we know what our seq should be)
             return self.reply(info,

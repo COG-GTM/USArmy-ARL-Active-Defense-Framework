@@ -1,0 +1,120 @@
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html
+   Location: src/python/adf/plugin.py:651:4
+650	    c = p1.config()  # test all values are set
+651	    assert (c['k'] == 'v' and c['a']['b']['c'] == 'd' and c['intval'] == 1 and c['list'] == [
+652	            1, 2, 3] and c['string'] == 'test' and c['dotted']['keys'] == 'value')
+653	    p1.config('!a.b.c')  # test dk delete
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html
+   Location: src/python/adf/plugin.py:654:4
+653	    p1.config('!a.b.c')  # test dk delete
+654	    assert ('c' not in p1.config()['a']['b'])  # check dk delete
+655	    print(p1.config())
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html
+   Location: src/python/adf/plugin.py:664:4
+663	    print(p1.config())
+664	    assert (p1.config('dotted') is None and p1.config(
+665	        'list') is None)  # check deletion
+666	    # test link
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html
+   Location: src/python/adf/plugin.py:679:4
+678	    print(p1.call('load_plugin', 'Plugin', name='test'))
+679	    assert(f.get_plugin('test') is not None)
+680	    # test plugin setting state remotely via IPC with call -> call_plugin -> set_state
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html
+   Location: src/python/adf/plugin.py:684:4
+683	    print(t.get_state())
+684	    assert(t.get_state('from_p2') == 'hi')
+685	    f.stop()
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: src/python/adf/plugins/bpf_tap.py:4:0
+3	
+4	import subprocess
+5	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: src/python/adf/plugins/bpf_tap.py:85:16
+84	            self.debug('%d written to %s' % (len(bpf_text), self.bpf))
+85	            p = subprocess.Popen(self.command.split())
+86	            self.debug('%s: %s' % (p.pid, self.command))
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b311-random
+   Location: src/python/adf/plugins/tcp.py:67:31
+66	            self.conns[key] = [info['seq'] + 1,
+67	                               random.randint(1, 2**32 - 1), [], []]
+68	            # generate reply with SYN+ACK, seq=our ISN-1, ack=remote ISN+1
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: src/python/adf/util.py:100:20
+99	                        v = parse_int(v)  # handle (list of) ints
+100	                    except:
+101	                        pass  # not integers
+102	                    if parse_value is True:  # values will always be a list of strings or ints
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: src/python/adf/util.py:105:24
+104	                            v = parse_list(v)  # turn all strings into lists
+105	                        except:
+106	                            pass  # not a string, already parsed
+107	                    elif type(v) is list and len(v) == 1:
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 5306
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 65
+		Medium: 16
+		High: 1
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 82
+Files skipped (0):

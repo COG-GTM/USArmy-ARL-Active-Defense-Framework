@@ -1,0 +1,6 @@
+Checking src/bpf_tap.c ...
+src/bpf_tap.c:107:6: style: The scope of the variable 'nwrite' can be reduced. [variableScope]
+ int nwrite;
+     ^
+nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]
+

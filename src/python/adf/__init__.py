@@ -32,6 +32,9 @@ else:
 #util first as everything uses it
 from .util import *
 
+#security gates used by Event/Framework/Plugin (F-001..F-005, F-017)
+from . import _security as security
+
 #event class next, needed by plugin and framework
 from .event import Event
 

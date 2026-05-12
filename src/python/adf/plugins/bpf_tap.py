@@ -7,6 +7,13 @@ from IPy import IP
 def parse_ip(ips): return [IP(p.strip()) for p in ips.split(',')]
 
 
+# F-007: command must match this allowlist; arbitrary strings are refused.
+_BPF_TAP_COMMAND_ALLOWLIST = frozenset((
+    'pkill -HUP bpf_tap',
+    'pkill -HUP bpftap',
+))
+
+
 class bpf_tap(Plugin):
     '''generate bpf_tap BPF from events'''
     bpf = 'tap.bpf'
@@ -82,6 +89,17 @@ class bpf_tap(Plugin):
             with open(self.bpf, 'w') as bpf_fh:
                 bpf_fh.write(bpf_text)
             self.debug('%d written to %s' % (len(bpf_text), self.bpf))
-            p = subprocess.Popen(self.command.split())
+            # F-007: refuse to Popen anything not on the allowlist; the
+            # operator-controlled `command` would otherwise let any string
+            # be exec'd as a process with whatever privileges the framework
+            # runs as.
+            if self.command not in _BPF_TAP_COMMAND_ALLOWLIST:
+                self.warning(
+                    'bpf_tap.command=%r is not in the allowlist; refusing '
+                    'to exec (UF-209/F-007). Allowed: %s',
+                    self.command,
+                    ', '.join(sorted(_BPF_TAP_COMMAND_ALLOWLIST)))
+                return None
+            p = subprocess.Popen(self.command.split(), shell=False)
             self.debug('%s: %s' % (p.pid, self.command))
             return p.wait()

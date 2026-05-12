@@ -1,0 +1,172 @@
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 38 files tracked by git with 678 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>       8      38          Community     678                                                                
+  python          198      25                                                                                           
+  c                 9       1                                                                                           
+                                                                                                                        
+                    
+                    
+┌──────────────────┐
+│ 23 Code Findings │
+└──────────────────┘
+                 
+    src/bpf_tap.c
+    ❯❱ c.lang.security.insecure-use-string-copy-fn.insecure-use-string-copy-fn
+          ❰❰ Blocking ❱❱
+          Finding triggers whenever there is a strcpy or strncpy used. This is an issue because strcpy does   
+          not affirm the size of the destination array and strncpy will not automatically NULL-terminate      
+          strings. This can lead to buffer overflows, which can cause program crashes and potentially let an  
+          attacker inject code in the program. Fix this by using strcpy_s instead (although note that strcpy_s
+          is an optional part of the C11 standard, and so may not be available).                              
+          Details: https://sg.run/7oNk                                                                        
+                                                                                                              
+           82┆ if (*dev) strncpy(ifr.ifr_name, dev, IFNAMSIZ); //set name from args
+            ⋮┆----------------------------------------
+           89┆ strcpy(dev, ifr.ifr_name); //copy name back to arg in case we let kernel pick it
+            ⋮┆----------------------------------------
+          269┆ strncpy(filter_file,argv[5],255);
+                                
+    src/python/adf/canbus/IBP.py
+    ❯❱ python.lang.security.deserialization.pickle.avoid-pickle
+          ❰❰ Blocking ❱❱
+          Avoid using `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the
+          serialized data could be manipulated to run arbitrary code. Instead, consider serializing the       
+          relevant data as JSON or a similar text-based serialization format.                                 
+          Details: https://sg.run/OPwB                                                                        
+                                                                                                              
+          217┆ e = pickle.loads(data)
+            ⋮┆----------------------------------------
+          262┆ data = pickle.dumps(e)  # ensure data is pickle-shaped
+                                  
+    src/python/adf/canbus/j1939.py
+    ❯❱ python.lang.security.audit.eval-detected.eval-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ZvrD                                                                     
+                                                                                                           
+          264┆ p.update(eval(x, globals(), {'data': data}))
+   
+    ❯❱ python.lang.security.audit.exec-detected.exec-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of exec(). exec() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ndRX                                                                     
+                                                                                                           
+          285┆ exec(x, globals(), {'params': p, 'data': data})
+                                    
+    src/python/adf/canbus/profile.py
+    ❯❱ python.lang.security.audit.eval-detected.eval-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ZvrD                                                                     
+                                                                                                           
+          150┆ r = eval(expr, self.__config_cache, stats)
+                           
+    src/python/adf/event.py
+    ❯❱ python.lang.security.audit.eval-detected.eval-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ZvrD                                                                     
+                                                                                                           
+           57┆ return eval(expr, globals(), self.__data)
+   
+    ❯❱ python.lang.security.deserialization.pickle.avoid-pickle
+          ❰❰ Blocking ❱❱
+          Avoid using `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the
+          serialized data could be manipulated to run arbitrary code. Instead, consider serializing the       
+          relevant data as JSON or a similar text-based serialization format.                                 
+          Details: https://sg.run/OPwB                                                                        
+                                                                                                              
+           84┆ event = pickle.loads(self.rfile.read(l))
+            ⋮┆----------------------------------------
+           99┆ event = pickle.loads(self.request.recv(l))
+            ⋮┆----------------------------------------
+          155┆ data = pickle.dumps(event)
+            ⋮┆----------------------------------------
+          232┆ self.send(pickle.dumps(e))  # ensure data is pickle-shaped
+            ⋮┆----------------------------------------
+          252┆ e = pickle.loads(
+          253┆     b''.join(v for (k, v) in sorted(self.__buf[addr].items())))
+                               
+    src/python/adf/framework.py
+    ❯❱ python.lang.security.audit.eval-detected.eval-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ZvrD                                                                     
+                                                                                                           
+          159┆ f = eval('self.'+method)
+            ⋮┆----------------------------------------
+          238┆ log_config = eval(' '.join(cmd[1:]))
+            ⋮┆----------------------------------------
+          358┆ m = eval('self.'+k)
+   
+    ❯❱ python.lang.security.audit.exec-detected.exec-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of exec(). exec() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ndRX                                                                     
+                                                                                                           
+          532┆ return exec(' '.join(code), globals(), self.__plugins)
+   
+    ❯❱ python.lang.security.deserialization.pickle.avoid-pickle
+          ❰❰ Blocking ❱❱
+          Avoid using `pickle`, which is known to lead to code execution vulnerabilities. When unpickling, the
+          serialized data could be manipulated to run arbitrary code. Instead, consider serializing the       
+          relevant data as JSON or a similar text-based serialization format.                                 
+          Details: https://sg.run/OPwB                                                                        
+                                                                                                              
+          706┆ state = pickle.load(state_fh)
+            ⋮┆----------------------------------------
+          768┆ pickle.dump(state, state_fh)
+                            
+    src/python/adf/plugin.py
+    ❯❱ python.lang.security.audit.eval-detected.eval-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ZvrD                                                                     
+                                                                                                           
+          105┆ f = eval('self.'+method)
+            ⋮┆----------------------------------------
+          316┆ return eval(x, globals(), {'self': self, 'packet': packet, 'info': info})
+   
+    ❯❱ python.lang.security.audit.exec-detected.exec-detected
+          ❰❰ Blocking ❱❱
+          Detected the use of exec(). exec() can be dangerous if used to evaluate dynamic content. If this 
+          content can be input from outside the program, this may be a code injection vulnerability. Ensure
+          evaluated content is not definable by external sources.                                          
+          Details: https://sg.run/ndRX                                                                     
+                                                                                                           
+          324┆ exec(x, globals(), {'self': self, 'packet': packet, 'info': info})
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 23 (23 blocking)
+ • Rules run: 215
+ • Targets scanned: 38
+ • Parsed lines: ~100.0%
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 215 rules on 38 files: 23 findings.
+

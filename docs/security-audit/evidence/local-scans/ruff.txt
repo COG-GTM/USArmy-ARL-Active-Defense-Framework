@@ -1,0 +1,420 @@
+src/python/adf/__init__.py:4:8: F401 `sys` imported but unused
+src/python/adf/__init__.py:6:8: F401 `time` imported but unused
+src/python/adf/__init__.py:7:8: F401 `socket` imported but unused
+src/python/adf/__init__.py:8:8: F401 `struct` imported but unused
+src/python/adf/__init__.py:9:8: F401 `signal` imported but unused
+src/python/adf/__init__.py:10:8: F401 `threading` imported but unused
+src/python/adf/__init__.py:11:8: F401 `logging` imported but unused
+src/python/adf/__init__.py:12:8: F401 `queue` imported but unused
+src/python/adf/__init__.py:13:8: F401 `pickle` imported but unused
+src/python/adf/__init__.py:14:8: F401 `json` imported but unused
+src/python/adf/__init__.py:15:8: F401 `importlib` imported but unused
+src/python/adf/__init__.py:24:37: F401 `multiprocessing.dummy` imported but unused
+src/python/adf/__init__.py:33:1: E402 Module level import not at top of file
+src/python/adf/__init__.py:33:1: F403 `from .util import *` used; unable to detect undefined names
+src/python/adf/__init__.py:36:1: E402 Module level import not at top of file
+src/python/adf/__init__.py:36:20: F401 `.event.Event` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:39:1: E402 Module level import not at top of file
+src/python/adf/__init__.py:39:24: F401 `.framework.Framework` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:42:1: E402 Module level import not at top of file
+src/python/adf/__init__.py:42:21: F401 `.plugin.Plugin` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:45:1: E402 Module level import not at top of file
+src/python/adf/__init__.py:45:20: F401 `.event.Channel` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:45:29: F401 `.event.Listener` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:45:39: F401 `.event.Sender` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:45:47: F401 `.event.Migrate` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:48:1: E402 Module level import not at top of file
+src/python/adf/__init__.py:48:24: F401 `.interface.Interface` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:51:4: E701 Multiple statements on one line (colon)
+src/python/adf/__init__.py:51:29: F401 `.interface.Tap` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:52:1: E722 Do not use bare `except`
+src/python/adf/__init__.py:52:7: E701 Multiple statements on one line (colon)
+src/python/adf/__init__.py:53:4: E701 Multiple statements on one line (colon)
+src/python/adf/__init__.py:53:29: F401 `.interface.Pcap` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:54:1: E722 Do not use bare `except`
+src/python/adf/__init__.py:54:7: E701 Multiple statements on one line (colon)
+src/python/adf/__init__.py:55:4: E701 Multiple statements on one line (colon)
+src/python/adf/__init__.py:55:29: F401 `.interface.NFQueue` imported but unused; consider removing, adding to `__all__`, or using a redundant alias
+src/python/adf/__init__.py:56:1: E722 Do not use bare `except`
+src/python/adf/__init__.py:56:7: E701 Multiple statements on one line (colon)
+src/python/adf/__main__.py:54:9: E722 Do not use bare `except`
+src/python/adf/__main__.py:87:5: E722 Do not use bare `except`
+src/python/adf/__main__.py:95:17: E741 Ambiguous variable name: `l`
+src/python/adf/adf_parallel.py:76:13: E741 Ambiguous variable name: `l`
+src/python/adf/adfcon.py:3:1: E401 [*] Multiple imports on one line
+src/python/adf/adfcon.py:15:27: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:29:16: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:30:13: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:48:25: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:53:28: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:56:17: E741 Ambiguous variable name: `l`
+src/python/adf/adfcon.py:57:25: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:58:29: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:59:21: E701 Multiple statements on one line (colon)
+src/python/adf/adfcon.py:60:21: E701 Multiple statements on one line (colon)
+src/python/adf/canbus/IBP.py:3:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/IBP.py:4:1: F403 `from adf.canbus import *` used; unable to detect undefined names
+src/python/adf/canbus/IBP.py:12:14: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/IBP.py:75:9: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/IBP.py:77:13: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/IBP.py:82:31: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/IBP.py:94:35: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/IBP.py:120:17: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/IBP.py:132:21: E722 Do not use bare `except`
+src/python/adf/canbus/IBP.py:304:5: E722 Do not use bare `except`
+src/python/adf/canbus/IBP.py:317:9: F405 `Framework` may be undefined, or defined from star imports
+src/python/adf/canbus/UDS.py:8:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/UDS.py:9:1: F403 `from adf.canbus import *` used; unable to detect undefined names
+src/python/adf/canbus/UDS.py:37:23: F601 Dictionary key literal `0x2F` repeated
+src/python/adf/canbus/UDS.py:177:11: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/UDS.py:190:29: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/UDS.py:242:9: E722 Do not use bare `except`
+src/python/adf/canbus/UDS.py:318:44: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/UDS.py:324:38: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/UDS.py:810:12: F401 [*] `sys` imported but unused
+src/python/adf/canbus/UDS.py:813:9: F405 `Framework` may be undefined, or defined from star imports
+src/python/adf/canbus/__init__.py:17:5: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/__init__.py:19:24: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/__init__.py:144:21: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/__init__.py:245:37: F841 [*] Local variable `e` is assigned to but never used
+src/python/adf/canbus/__init__.py:258:13: F405 `Framework` may be undefined, or defined from star imports
+src/python/adf/canbus/__init__.py:273:19: F401 `.j1939` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:275:24: F401 `.j1939.J1939Decoder` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:277:22: F401 `.dbc.DBCDecoder` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:277:34: F401 `.dbc.DBCEncoder` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:285:19: F401 `.logger` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:287:25: F401 `.logger.Log` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:287:30: F401 `.logger.Replay` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:295:24: F401 `.j1708.J1708Interface` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:295:40: F401 `.j1708.J1708overIP` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:296:24: F401 `.j1587.J1587Decoder` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:300:23: F841 [*] Local variable `e` is assigned to but never used
+src/python/adf/canbus/__init__.py:306:19: F401 `.IBP` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/__init__.py:311:19: F401 `.UDS` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/python/adf/canbus/dbc.py:5:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/dbc.py:12:18: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/dbc.py:81:25: E722 Do not use bare `except`
+src/python/adf/canbus/dbc.py:93:33: F841 [*] Local variable `e` is assigned to but never used
+src/python/adf/canbus/dbc.py:141:37: F841 [*] Local variable `e` is assigned to but never used
+src/python/adf/canbus/dbc.py:154:16: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/dbc.py:179:9: F405 `Framework` may be undefined, or defined from star imports
+src/python/adf/canbus/ecu.py:178:12: F401 [*] `canbus` imported but unused
+src/python/adf/canbus/j1939.py:5:8: F401 [*] `cmath` imported but unused
+src/python/adf/canbus/j1939.py:6:8: F401 [*] `sys` imported but unused
+src/python/adf/canbus/j1939.py:7:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/j1939.py:175:12: E713 [*] Test for membership should be `not in`
+src/python/adf/canbus/j1939.py:195:20: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/j1939.py:268:25: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/j1939.py:319:9: F405 `Framework` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:2:8: F401 [*] `logging` imported but unused
+src/python/adf/canbus/logger.py:4:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/logger.py:5:1: F403 `from adf.canbus import *` used; unable to detect undefined names
+src/python/adf/canbus/logger.py:9:11: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:25:25: F405 `Event` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:28:27: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:44:15: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:60:37: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:70:14: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:119:31: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:165:13: F841 Local variable `timestamp` is assigned to but never used
+src/python/adf/canbus/logger.py:171:9: E722 Do not use bare `except`
+src/python/adf/canbus/logger.py:180:9: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/logger.py:185:20: F405 `Message` may be undefined, or defined from star imports
+src/python/adf/canbus/logger.py:189:5: E722 Do not use bare `except`
+src/python/adf/canbus/logger.py:198:9: E741 Ambiguous variable name: `l`
+src/python/adf/canbus/mqtt.py:1:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/mqtt.py:11:18: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:40:28: F405 `parse_list` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:41:9: E722 Do not use bare `except`
+src/python/adf/canbus/mqtt.py:44:34: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:44:44: F405 `parse_list` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:45:9: E722 Do not use bare `except`
+src/python/adf/canbus/mqtt.py:48:27: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:48:37: F405 `parse_list` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:49:9: E722 Do not use bare `except`
+src/python/adf/canbus/mqtt.py:53:9: E722 Do not use bare `except`
+src/python/adf/canbus/mqtt.py:88:9: E722 Do not use bare `except`
+src/python/adf/canbus/mqtt.py:94:9: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:99:13: F841 Local variable `topic` is assigned to but never used
+src/python/adf/canbus/mqtt.py:161:18: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:196:9: E722 Do not use bare `except`
+src/python/adf/canbus/mqtt.py:202:9: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/mqtt.py:206:13: F841 Local variable `topic` is assigned to but never used
+src/python/adf/canbus/profile.py:3:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/canbus/profile.py:8:13: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/profile.py:48:25: F841 Local variable `mean` is assigned to but never used
+src/python/adf/canbus/profile.py:56:21: F841 Local variable `delta` is assigned to but never used
+src/python/adf/canbus/profile.py:65:17: E722 Do not use bare `except`
+src/python/adf/canbus/profile.py:84:16: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/canbus/profile.py:104:13: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/config/j1939specparser.py:29:8: E741 Ambiguous variable name: `l`
+src/python/adf/config/j1939specparser.py:33:17: E741 Ambiguous variable name: `l`
+src/python/adf/config/j1939specparser.py:35:17: E741 Ambiguous variable name: `l`
+src/python/adf/config/j1939specparser.py:36:9: E722 Do not use bare `except`
+src/python/adf/config/j1939specparser.py:37:13: E741 Ambiguous variable name: `l`
+src/python/adf/config/j1939specparser.py:51:9: E722 Do not use bare `except`
+src/python/adf/config/j1939specparser.py:56:9: E722 Do not use bare `except`
+src/python/adf/config/j1939specparser.py:68:25: F841 [*] Local variable `e` is assigned to but never used
+src/python/adf/config/j1939specparser.py:83:25: F841 [*] Local variable `e` is assigned to but never used
+src/python/adf/event.py:1:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/event.py:29:44: F405 `dk_get` may be undefined, or defined from star imports
+src/python/adf/event.py:30:33: F405 `dk_update` may be undefined, or defined from star imports
+src/python/adf/event.py:31:33: F405 `dk_del` may be undefined, or defined from star imports
+src/python/adf/event.py:65:1: E402 Module level import not at top of file
+src/python/adf/event.py:83:29: E741 Ambiguous variable name: `l`
+src/python/adf/event.py:83:33: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/event.py:84:37: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/event.py:98:29: E741 Ambiguous variable name: `l`
+src/python/adf/event.py:98:33: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/event.py:99:37: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/event.py:155:16: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/event.py:158:33: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:177:41: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/event.py:180:39: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/event.py:232:23: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/event.py:240:21: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/event.py:252:17: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/event.py:263:25: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:263:39: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:263:55: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:264:34: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:264:53: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:279:21: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/event.py:284:20: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/event.py:361:9: E722 Do not use bare `except`
+src/python/adf/event.py:363:36: F401 [*] `adf.Event` imported but unused
+src/python/adf/event.py:377:1: E722 Do not use bare `except`
+src/python/adf/event.py:393:5: E741 Ambiguous variable name: `l`
+src/python/adf/event.py:393:5: F841 Local variable `l` is assigned to but never used
+src/python/adf/event.py:394:5: F841 Local variable `s` is assigned to but never used
+src/python/adf/event.py:395:5: F405 `time` may be undefined, or defined from star imports
+src/python/adf/event.py:397:25: E711 Comparison to `None` should be `cond is None`
+src/python/adf/event.py:398:9: F405 `time` may be undefined, or defined from star imports
+src/python/adf/event.py:402:25: E711 Comparison to `None` should be `cond is None`
+src/python/adf/event.py:403:9: F405 `time` may be undefined, or defined from star imports
+src/python/adf/event.py:414:5: F841 Local variable `c1` is assigned to but never used
+src/python/adf/event.py:415:5: F841 Local variable `c2` is assigned to but never used
+src/python/adf/event.py:416:5: F405 `time` may be undefined, or defined from star imports
+src/python/adf/event.py:419:25: E711 Comparison to `None` should be `cond is None`
+src/python/adf/event.py:420:9: F405 `time` may be undefined, or defined from star imports
+src/python/adf/event.py:424:25: E711 Comparison to `None` should be `cond is None`
+src/python/adf/event.py:425:9: F405 `time` may be undefined, or defined from star imports
+src/python/adf/framework.py:1:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/framework.py:10:17: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:21:12: F405 `ADF_MP` may be undefined, or defined from star imports
+src/python/adf/framework.py:22:50: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/framework.py:23:62: F405 `os` may be undefined, or defined from star imports
+src/python/adf/framework.py:26:27: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/framework.py:27:26: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/framework.py:28:25: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/framework.py:29:23: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/framework.py:39:9: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:39:23: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:39:38: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:40:9: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:40:23: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:40:39: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:42:13: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:42:27: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:42:42: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:43:9: E722 Do not use bare `except`
+src/python/adf/framework.py:45:24: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/framework.py:46:9: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:46:23: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:46:38: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:47:9: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:47:23: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:47:39: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:49:13: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:49:27: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:49:42: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:50:9: E722 Do not use bare `except`
+src/python/adf/framework.py:53:27: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:55:9: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:76:13: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:105:26: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:108:24: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:165:20: F405 `queue` may be undefined, or defined from star imports
+src/python/adf/framework.py:214:16: F405 `parse_env` may be undefined, or defined from star imports
+src/python/adf/framework.py:214:38: F405 `parse_line` may be undefined, or defined from star imports
+src/python/adf/framework.py:234:38: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:255:54: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:258:52: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:260:52: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:262:25: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:278:47: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:295:31: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:297:25: F405 `os` may be undefined, or defined from star imports
+src/python/adf/framework.py:298:28: F405 `os` may be undefined, or defined from star imports
+src/python/adf/framework.py:304:46: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:317:42: F405 `parse_kvs` may be undefined, or defined from star imports
+src/python/adf/framework.py:338:41: F405 `sys` may be undefined, or defined from star imports
+src/python/adf/framework.py:353:17: F405 `json` may be undefined, or defined from star imports
+src/python/adf/framework.py:366:39: F405 `Event` may be undefined, or defined from star imports
+src/python/adf/framework.py:369:21: E722 Do not use bare `except`
+src/python/adf/framework.py:370:53: F405 `sys` may be undefined, or defined from star imports
+src/python/adf/framework.py:375:9: E722 Do not use bare `except`
+src/python/adf/framework.py:376:41: F405 `sys` may be undefined, or defined from star imports
+src/python/adf/framework.py:380:16: F405 `json` may be undefined, or defined from star imports
+src/python/adf/framework.py:387:23: F405 `import_package` may be undefined, or defined from star imports
+src/python/adf/framework.py:411:19: F405 `import_package` may be undefined, or defined from star imports
+src/python/adf/framework.py:462:16: F405 `ADF_MP` may be undefined, or defined from star imports
+src/python/adf/framework.py:468:21: F405 `os` may be undefined, or defined from star imports
+src/python/adf/framework.py:468:41: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/framework.py:499:17: E722 Do not use bare `except`
+src/python/adf/framework.py:503:13: E722 Do not use bare `except`
+src/python/adf/framework.py:574:21: F405 `Event` may be undefined, or defined from star imports
+src/python/adf/framework.py:621:16: F405 `queue` may be undefined, or defined from star imports
+src/python/adf/framework.py:653:9: E722 Do not use bare `except`
+src/python/adf/framework.py:706:33: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/framework.py:725:26: E741 Ambiguous variable name: `l`
+src/python/adf/framework.py:731:21: E722 Do not use bare `except`
+src/python/adf/framework.py:736:13: E722 Do not use bare `except`
+src/python/adf/framework.py:768:21: F405 `pickle` may be undefined, or defined from star imports
+src/python/adf/framework.py:786:37: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/framework.py:825:44: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/framework.py:841:14: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/framework.py:907:5: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/framework.py:908:5: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/interface.py:1:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/interface.py:10:1: E722 Do not use bare `except`
+src/python/adf/interface.py:14:17: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/interface.py:37:21: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/interface.py:39:20: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/interface.py:57:33: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:58:21: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:58:39: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:58:56: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:60:21: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:60:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:72:32: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:74:38: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:84:53: F405 `time` may be undefined, or defined from star imports
+src/python/adf/interface.py:107:5: E722 Do not use bare `except`
+src/python/adf/interface.py:125:17: E722 Do not use bare `except`
+src/python/adf/interface.py:130:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:131:37: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:132:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:132:57: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:135:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:136:37: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:137:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:137:57: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:140:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:141:37: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:142:40: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:142:57: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:166:13: E722 Do not use bare `except`
+src/python/adf/interface.py:168:9: E722 Do not use bare `except`
+src/python/adf/interface.py:207:26: F405 `time` may be undefined, or defined from star imports
+src/python/adf/interface.py:230:1: E722 Do not use bare `except`
+src/python/adf/interface.py:263:13: E722 Do not use bare `except`
+src/python/adf/interface.py:279:25: F405 `time` may be undefined, or defined from star imports
+src/python/adf/interface.py:291:33: F405 `time` may be undefined, or defined from star imports
+src/python/adf/interface.py:318:52: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/interface.py:325:48: F405 `struct` may be undefined, or defined from star imports
+src/python/adf/interface.py:338:1: E722 Do not use bare `except`
+src/python/adf/interface.py:385:45: F405 `time` may be undefined, or defined from star imports
+src/python/adf/interface.py:409:24: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:410:38: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:410:57: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:416:24: F405 `socket` may be undefined, or defined from star imports
+src/python/adf/interface.py:440:1: E722 Do not use bare `except`
+src/python/adf/interface.py:449:12: F401 [*] `os` imported but unused
+src/python/adf/interface.py:450:12: F401 [*] `logging` imported but unused
+src/python/adf/interface.py:453:16: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/interface.py:459:9: F405 `Framework` may be undefined, or defined from star imports
+src/python/adf/interface.py:462:9: F841 Local variable `t1` is assigned to but never used
+src/python/adf/interface.py:463:9: F841 Local variable `t2` is assigned to but never used
+src/python/adf/interface.py:464:9: F405 `time` may be undefined, or defined from star imports
+src/python/adf/interface.py:468:9: F841 Local variable `td` is assigned to but never used
+src/python/adf/interface.py:487:9: F841 Local variable `pd` is assigned to but never used
+src/python/adf/interface.py:490:13: F841 Local variable `pcap2` is assigned to but never used
+src/python/adf/plugin.py:1:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/plugin.py:3:20: F401 [*] `.event.Event` imported but unused
+src/python/adf/plugin.py:8:14: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:26:12: F405 `ADF_MP` may be undefined, or defined from star imports
+src/python/adf/plugin.py:27:45: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:35:25: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:36:25: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:37:25: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:38:26: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:40:30: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:41:27: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:42:26: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:43:26: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:49:29: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:52:9: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:60:44: F405 `dk_get` may be undefined, or defined from star imports
+src/python/adf/plugin.py:69:12: F405 `ADF_MP` may be undefined, or defined from star imports
+src/python/adf/plugin.py:70:13: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:70:27: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:70:42: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:71:13: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:71:27: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:71:42: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:72:13: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:72:27: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:72:43: F405 `signal` may be undefined, or defined from star imports
+src/python/adf/plugin.py:76:24: F405 `os` may be undefined, or defined from star imports
+src/python/adf/plugin.py:79:27: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/plugin.py:87:19: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/plugin.py:91:16: F405 `threading` may be undefined, or defined from star imports
+src/python/adf/plugin.py:112:20: F405 `queue` may be undefined, or defined from star imports
+src/python/adf/plugin.py:158:20: F405 `queue` may be undefined, or defined from star imports
+src/python/adf/plugin.py:221:37: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:227:66: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:230:65: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:233:68: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:236:66: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:250:29: F405 `dk_get` may be undefined, or defined from star imports
+src/python/adf/plugin.py:258:28: F405 `dk_get` may be undefined, or defined from star imports
+src/python/adf/plugin.py:266:17: F405 `dk_del` may be undefined, or defined from star imports
+src/python/adf/plugin.py:268:17: F405 `dk_update` may be undefined, or defined from star imports
+src/python/adf/plugin.py:344:13: E741 Ambiguous variable name: `l`
+src/python/adf/plugin.py:356:13: E741 Ambiguous variable name: `l`
+src/python/adf/plugin.py:388:9: E741 Ambiguous variable name: `l`
+src/python/adf/plugin.py:394:13: E741 Ambiguous variable name: `l`
+src/python/adf/plugin.py:401:17: E741 Ambiguous variable name: `l`
+src/python/adf/plugin.py:404:17: E741 Ambiguous variable name: `l`
+src/python/adf/plugin.py:436:32: F405 `time` may be undefined, or defined from star imports
+src/python/adf/plugin.py:449:25: F405 `time` may be undefined, or defined from star imports
+src/python/adf/plugin.py:460:13: F405 `dk_update` may be undefined, or defined from star imports
+src/python/adf/plugin.py:461:30: F405 `dk_get` may be undefined, or defined from star imports
+src/python/adf/plugin.py:466:20: F405 `dk_get` may be undefined, or defined from star imports
+src/python/adf/plugin.py:473:20: F405 `dk_del` may be undefined, or defined from star imports
+src/python/adf/plugin.py:535:13: E722 Do not use bare `except`
+src/python/adf/plugin.py:607:32: F405 `mp` may be undefined, or defined from star imports
+src/python/adf/plugin.py:613:13: F405 `time` may be undefined, or defined from star imports
+src/python/adf/plugin.py:633:20: F405 `queue` may be undefined, or defined from star imports
+src/python/adf/plugin.py:634:17: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:639:26: F405 `logging` may be undefined, or defined from star imports
+src/python/adf/plugin.py:671:5: F405 `time` may be undefined, or defined from star imports
+src/python/adf/plugins/arp.py:3:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/plugins/arp.py:6:11: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/plugins/arp.py:13:13: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/plugins/bpf_tap.py:2:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/plugins/bpf_tap.py:10:15: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/plugins/bpf_tap.py:40:30: F405 `parse_int` may be undefined, or defined from star imports
+src/python/adf/plugins/bpf_tap.py:42:35: F405 `parse_int` may be undefined, or defined from star imports
+src/python/adf/plugins/bpf_tap.py:44:46: F405 `parse_int` may be undefined, or defined from star imports
+src/python/adf/plugins/bpf_tap.py:57:9: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/plugins/connlog.py:2:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/plugins/connlog.py:5:15: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/plugins/connlog.py:17:23: F405 `sys` may be undefined, or defined from star imports
+src/python/adf/plugins/connlog.py:79:32: F405 `time` may be undefined, or defined from star imports
+src/python/adf/plugins/redir.py:1:22: F401 [*] `binascii.hexlify` imported but unused
+src/python/adf/plugins/redir.py:2:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/plugins/redir.py:7:13: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/plugins/tcp.py:1:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/plugins/tcp.py:7:11: F405 `Plugin` may be undefined, or defined from star imports
+src/python/adf/util.py:3:1: F403 `from adf import *` used; unable to detect undefined names
+src/python/adf/util.py:66:16: E741 Ambiguous variable name: `l`
+src/python/adf/util.py:70:5: E741 Ambiguous variable name: `l`
+src/python/adf/util.py:100:21: E722 Do not use bare `except`
+src/python/adf/util.py:105:25: E722 Do not use bare `except`
+src/python/adf/util.py:109:13: E722 Do not use bare `except`
+src/python/adf/util.py:125:9: E722 Do not use bare `except`
+src/python/adf/util.py:159:5: E722 Do not use bare `except`
+Found 418 errors.
+[*] 18 fixable with the `--fix` option (19 hidden fixes can be enabled with the `--unsafe-fixes` option).

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 36" role="img" aria-label="Cognition">
+  <g fill="#000000">
+    <!-- sprocket monogram: hexagonal honeycomb mark -->
+    <g transform="translate(2,4)">
+      <polygon points="14,0 24.124,5.5 24.124,16.5 14,22 3.876,16.5 3.876,5.5" fill="none" stroke="#000" stroke-width="2"/>
+      <polygon points="9,5 13.5,7.5 13.5,14.5 9,17 4.5,14.5 4.5,7.5" fill="#000" opacity="0.85"/>
+      <polygon points="18,5 22.5,7.5 22.5,14.5 18,17 13.5,14.5 13.5,7.5" fill="none" stroke="#000" stroke-width="1.4"/>
+    </g>
+    <!-- wordmark text -->
+    <text x="38" y="25" font-family="Inter Tight, Inter, system-ui, sans-serif" font-weight="700" font-size="22" letter-spacing="-0.5">Cognition</text>
+  </g>
+</svg>

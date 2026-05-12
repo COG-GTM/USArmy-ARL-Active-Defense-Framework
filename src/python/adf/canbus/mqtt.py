@@ -18,7 +18,11 @@ class MQTTClient(Plugin):
             subscribe_topic: topic to subscribe to
             subscribe_map: {signal_name: message_name, ...} maps signal in subscribed message to can message.
             id_map: {message_name: arbitration_id, ...} maps can message to arbitration_id 
-            extended_id: if True, force 29-bit CAN IDs, else uses ID > 0x7ff to set extended id '''
+            extended_id: if True, force 29-bit CAN IDs, else uses ID > 0x7ff to set extended id
+            tls: if truthy, wrap the MQTT connection in TLS (F-009).
+            tls_cafile: optional CA bundle path passed to ``tls_set``.
+            tls_certfile/tls_keyfile: optional client cert pair.
+            username/password: optional MQTT auth credentials (F-009).'''
 
     client = None
     host = 'localhost'
@@ -34,29 +38,51 @@ class MQTTClient(Plugin):
     message_param = None
     message_active_value = None
     message_inactive_value = None
+    tls = False
+    tls_cafile = None
+    tls_certfile = None
+    tls_keyfile = None
+    username = None
+    password = None
 
     def init(self):
+        # F-018: narrow bare excepts to the value/type errors raised by the
+        # parsers; anything else propagates so we surface real bugs.
         try:
             self.publish = parse_list(self.publish)
-        except:
+        except (TypeError, ValueError, AttributeError):
             self.publish = None
         try:
             self.subscribe_map = parse_kvs(parse_list(self.subscribe_map))
-        except:
+        except (TypeError, ValueError, AttributeError):
             self.subscribe_map = None
         try:
             self.id_map = parse_kvs(parse_list(self.id_map))
-        except:
+        except (TypeError, ValueError, AttributeError):
             self.id_map = {}
         try:
             self.rate_limit = float(self.rate_limit)
-        except:
+        except (TypeError, ValueError):
             self.rate_limit = None
         self.__last_send = time.time()
 
     def main(self):
         while True:
             self.__client = mqtt.Client()
+            # F-009: configure TLS + auth before connect when operator set them.
+            if self.tls:
+                self.__client.tls_set(
+                    ca_certs=self.tls_cafile,
+                    certfile=self.tls_certfile,
+                    keyfile=self.tls_keyfile,
+                )
+            else:
+                self.warning(
+                    'MQTTClient connecting to %s:%s without TLS (set '
+                    'tls=1 + tls_cafile to enable; UF-209/F-009)',
+                    self.host, self.port)
+            if self.username:
+                self.__client.username_pw_set(self.username, self.password)
             try:
                 self.__client.connect(self.host, self.port)
                 self.info('connected to %s:%s', self.host, self.port)
@@ -64,7 +90,7 @@ class MQTTClient(Plugin):
                     self.info('publishing %s', self.topic)
                     self.debug(self.publish)
                 break
-            except Exception as e:
+            except OSError as e:
                 self.warning(e, exc_info=True)
             time.sleep(1)
         if self.subscribe_topic:
@@ -83,9 +109,11 @@ class MQTTClient(Plugin):
                 self.warning(e, exc_info=True)
 
     def disconnect(self):
+        # F-018: only swallow the connection-level errors the MQTT client
+        # can raise during disconnect; anything else gets surfaced.
         try:
             self.__client.disconnect()
-        except:
+        except (OSError, AttributeError):
             pass
 
     def stop(self, *args, **kwargs):
@@ -159,15 +187,37 @@ class MQTTClient(Plugin):
         return info, None  # we're a sink so do not dispatch
 
 class MQTTLogger(Plugin):
-    '''logs MQTT messages'''
+    '''logs MQTT messages.
+
+    config knobs match :class:`MQTTClient` for ``tls`` / ``tls_cafile`` /
+    ``tls_certfile`` / ``tls_keyfile`` / ``username`` / ``password`` (F-009).'''
     client = None
     host = 'localhost'
     port = 1883
     subscribe = None
+    tls = False
+    tls_cafile = None
+    tls_certfile = None
+    tls_keyfile = None
+    username = None
+    password = None
 
     def main(self):
         while True:
             self.__client = mqtt.Client()
+            if self.tls:
+                self.__client.tls_set(
+                    ca_certs=self.tls_cafile,
+                    certfile=self.tls_certfile,
+                    keyfile=self.tls_keyfile,
+                )
+            else:
+                self.warning(
+                    'MQTTLogger connecting to %s:%s without TLS (set '
+                    'tls=1 + tls_cafile to enable; UF-209/F-009)',
+                    self.host, self.port)
+            if self.username:
+                self.__client.username_pw_set(self.username, self.password)
             try:
                 self.__client.connect(self.host, self.port)
                 self.info('connected to %s:%s', self.host, self.port)
@@ -190,10 +240,11 @@ class MQTTLogger(Plugin):
                 self.warning(e, exc_info=True)
 
     def disconnect(self):
+        # F-018: narrow to client/file close errors.
         try:
             self.__client.disconnect()
             self.__log.close()
-        except:
+        except (OSError, AttributeError):
             pass
 
     def stop(self, *args, **kwargs):

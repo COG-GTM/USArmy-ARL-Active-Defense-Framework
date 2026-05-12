@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" role="img" aria-label="US Army DEVCOM Army Research Laboratory">
+  <g font-family="Inter Tight, Inter, system-ui, sans-serif">
+    <!-- minimalist 5-point star mark -->
+    <g transform="translate(8,8)" fill="#000000">
+      <polygon points="20,0 25,15 40,15 28,24 32,40 20,30 8,40 12,24 0,15 15,15"/>
+    </g>
+    <text x="56" y="20" fill="#000000" font-weight="700" font-size="13" letter-spacing="0.5">US ARMY</text>
+    <text x="56" y="34" fill="#000000" font-weight="500" font-size="9.5" letter-spacing="0.3">DEVCOM ARMY RESEARCH</text>
+    <text x="56" y="46" fill="#000000" font-weight="500" font-size="9.5" letter-spacing="0.3">LABORATORY</text>
+  </g>
+</svg>

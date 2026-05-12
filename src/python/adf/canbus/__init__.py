@@ -253,15 +253,20 @@ try:
     # CANInterface/CANoverIP unit test
     def test(can_if):
         import logging
+        import subprocess
         from pprint import pformat
-        from os import system
         f = Framework()
         f.start_plugin(CANInterface, device=can_if)
         f.start_plugin(CANoverIP)
         f.link_plugin('CANInterface', 'CANoverIP')
         logging.info(pformat(f.config('show')))
         for v in range(16):
-            system('cansend '+can_if+' %03x' % v+'#%04x' % v)
+            # F-006: subprocess with shell=False + list args removes the
+            # shell-injection vector that the old `os.system('cansend '+
+            # can_if + ...)` had when ``can_if`` came from a caller.
+            subprocess.run(
+                ['cansend', can_if, '%03x#%04x' % (v, v)],
+                shell=False, check=False)
         f.stop()
     __all__.append('test')
 

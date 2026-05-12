@@ -1,3 +1,5 @@
+import ast
+
 from adf import *
 
 from pprint import pformat
@@ -40,14 +42,16 @@ class Framework(threading.Thread):
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
         try:
             signal.signal(signal.SIGHUP, signal.SIG_IGN)
-        except:
+        except (AttributeError, ValueError, OSError):
+            # F-018: SIGHUP is missing on Windows; only swallow the
+            # platform-specific errors so unrelated bugs surface.
             pass
         self.manager = mp.Manager()
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
         try:
             signal.signal(signal.SIGHUP, signal.SIG_DFL)
-        except:
+        except (AttributeError, ValueError, OSError):
             pass
         # setup main thread
         self.__shutdown = threading.Event()
@@ -156,7 +160,10 @@ class Framework(threading.Thread):
                 ipc_ret,method,args,kwargs = self._ipc_req.get(timeout=1)
                 self.__logger.debug('IPC %s(%s %s) -> %s',method,args,kwargs,ipc_ret)
                 try:
-                    f = eval('self.'+method)
+                    # F-003: getattr instead of eval('self.'+method)
+                    if not isinstance(method, str) or not method.isidentifier():
+                        raise AttributeError('invalid IPC method: %r' % method)
+                    f = getattr(self, method)
                     r = f(*args,**kwargs)
                 except Exception as e:
                     r = e
@@ -235,7 +242,10 @@ class Framework(threading.Thread):
                         import logging
                         logging.basicConfig(**log_config)
                     else:  # or a full dictionary for loading modules, etc..
-                        log_config = eval(' '.join(cmd[1:]))
+                        # F-003: ast.literal_eval restricts the operator
+                        # input to plain Python literals (dict/list/str/
+                        # numbers/None), removing the eval() RCE path.
+                        log_config = ast.literal_eval(' '.join(cmd[1:]))
                         log_config.update(version=1)
                         import logging.config
                         logging.config.dictConfig(log_config)
@@ -355,7 +365,11 @@ class Framework(threading.Thread):
             for cmd in j:
                 rc = {}
                 for k, args in cmd.items():
-                    m = eval('self.'+k)
+                    # F-003: getattr instead of eval('self.'+k)
+                    if not isinstance(k, str) or not k.isidentifier():
+                        raise AttributeError(
+                            'invalid json_config method: %r' % k)
+                    m = getattr(self, k)
                     kwargs = {}
                     for a in args:
                         if type(a) is dict:
@@ -496,11 +510,12 @@ class Framework(threading.Thread):
             try:
                 try:
                     link_p, pri = link_p.split(':', 1)
-                except:
+                except (AttributeError, ValueError):
                     # also accept / in case env vars are being used
                     link_p, pri = link_p.split('/', 1)
                 pri = int(pri)
-            except:
+            except (AttributeError, ValueError):
+                # F-018: only swallow parse errors here; anything else surfaces.
                 pri = 0
                 if b is None:
                     b = not direct  # if priorities/bidir not specified, default to 0 and bidir link
@@ -529,6 +544,12 @@ class Framework(threading.Thread):
     def exec_plugin(self, *code):
         '''Execute code in this context
     plugin methods will be available to code by plugin name (name.method())'''
+        # F-004: refuse exec unless the operator opted in via env var.
+        if not security.allow_exec():
+            self.__logger.warning(
+                'exec_plugin refused: set ADF_ALLOW_EXEC=1 to opt in '
+                '(UF-209/F-004). Code was: %s', code)
+            return False
         return exec(' '.join(code), globals(), self.__plugins)
 
     def subscribe(self, p, *subs):
@@ -650,7 +671,7 @@ class Framework(threading.Thread):
         r = None
         try:
             t = int(timeout)
-        except:
+        except (TypeError, ValueError):
             t = True  # wait forever
         we_locked = None  # did we lock the queue?
         if not self.__locked:  # lock the queue if it's not locked
@@ -702,9 +723,12 @@ class Framework(threading.Thread):
         if not state:
             if state_file:
                 try:
+                    # F-002: refuse to load state files that any other user
+                    # on the host could rewrite (would otherwise be RCE).
+                    security.ensure_state_file_safe(state_file)
                     with open(state_file, 'rb') as state_fh:
                         state = pickle.load(state_fh)
-                except Exception as e:
+                except (OSError, PermissionError, pickle.UnpicklingError, EOFError) as e:
                     self.__logger.exception(e)
                     return e
         if state:
@@ -728,12 +752,12 @@ class Framework(threading.Thread):
                 for p, s in state.get('__subs', {}).items():
                     try:
                         self.subscribe(p, *s)  # list of subscriptions
-                    except:
+                    except TypeError:
                         self.subscribe(p, s)  # None or True
                     self.__logger.info('%s %s', p, self.get_subs(p))
             try:
                 del state['__plugins'], state['__links'], state['__subs']
-            except:
+            except KeyError:
                 pass
             for p, s in state.items():
                 self.set_state(p, **s)  # migrate state to plugins
@@ -766,7 +790,9 @@ class Framework(threading.Thread):
             try:
                 with open(self.__state_file, 'wb') as state_fh:
                     pickle.dump(state, state_fh)
-            except Exception as e:
+                # F-002: lock down state file to owner read/write only.
+                security.secure_state_file_after_write(self.__state_file)
+            except (OSError, pickle.PicklingError) as e:
                 self.__logger.exception(e)
                 return e
             self.__logger.debug('state keys to %s: %s',
@@ -780,6 +806,16 @@ class Framework(threading.Thread):
         if not self.__control:  # do not restart control server if running
             import socketserver
             import ssl
+            # F-010: warn loudly when the control server is bound without
+            # TLS, because anyone reaching the port can run framework
+            # commands. Full mTLS+auth tracked under UF-247 (F-010-FOLLOWUP).
+            if 'ssl' not in kwargs:
+                bind_host = laddr[0] if laddr else '?'
+                if bind_host not in ('127.0.0.1', 'localhost', '::1'):
+                    self.__logger.warning(
+                        'control server bound on %s without TLS/auth; '
+                        'anyone on that network can run framework '
+                        'commands. See Jira UF-209/F-010.', bind_host)
 
             class ControlSocket(socketserver.StreamRequestHandler):
                 def handle(self):
@@ -809,8 +845,18 @@ class Framework(threading.Thread):
                             purpose=ssl.Purpose.CLIENT_AUTH, cafile=self.kwargs.get('cafile'))
                         ctx.load_cert_chain(certfile=self.kwargs.get(
                             'certfile'), keyfile=self.kwargs.get('keyfile'))
-                        ctx.verify_mode = self.kwargs.get(
-                            'verify', ssl.VerifyMode.CERT_NONE)
+                        # F-008: default to CERT_REQUIRED + TLSv1.2 minimum
+                        # so the documented SSL mode authenticates the peer.
+                        verify_default = ssl.VerifyMode.CERT_REQUIRED
+                        verify = self.kwargs.get('verify', verify_default)
+                        if isinstance(verify, str):
+                            verify = {
+                                'none': ssl.CERT_NONE,
+                                'optional': ssl.CERT_OPTIONAL,
+                                'required': ssl.CERT_REQUIRED,
+                            }.get(verify.lower(), verify_default)
+                        ctx.verify_mode = verify
+                        ctx.minimum_version = ssl.TLSVersion.TLSv1_2
                         ciphers = self.kwargs.get('ciphers')
                         if ciphers:
                             ctx.set_ciphers(ciphers)

@@ -53,7 +53,13 @@ special attributes are:
         return self.__data.copy()  # return copy of data as dict
 
     def eval(self, expr):
-        '''eval expression with event data as locals'''
+        '''eval expression with event data as locals.
+
+        F-027: refuse eval unless ``ADF_ALLOW_EXEC=1`` is set, so caller-
+        supplied expressions cannot execute arbitrary code by default.'''
+        from . import _security as _sec
+        if not _sec.allow_exec():
+            return None
         return eval(expr, globals(), self.__data)
     # because we override __getattr__ we need these to be able to pickle
     def __getstate__(self): return self.__dict__
@@ -75,19 +81,33 @@ class Listener(Plugin):
         import socketserver
         import ssl
 
+        max_payload = security.max_payload_bytes()
         if self.ssl:
             class EventSocket(socketserver.StreamRequestHandler):
                 def handle(self):
                     while True:
                         try:
                             l = struct.unpack('!L', self.rfile.read(4))[0]
+                            if l > max_payload:
+                                self.server.parent.warning(
+                                    'oversized event payload (%d > %d)'
+                                    ' from %s; dropping connection',
+                                    l, max_payload, self.client_address)
+                                break
+                            if not security.allow_pickle_net():
+                                self.server.parent.warning(
+                                    'refusing pickle.loads from %s '
+                                    '(set ADF_ALLOW_PICKLE_NET=1 to'
+                                    ' opt in; see Jira UF-209/F-001)',
+                                    self.client_address)
+                                break
                             event = pickle.loads(self.rfile.read(l))
                             event.path.append(self.server.parent.name)
                             self.server.parent.debug(
                                 '%s %s %s', self.client_address, l, event)
                             # we're not a Plugin instance so we have to call event in the parent
                             self.server.parent.event(event=event)
-                        except Exception as e: # likely closed by client
+                        except (OSError, struct.error, pickle.UnpicklingError, EOFError) as e:
                             self.server.parent.debug(e)
                             break
         else:
@@ -96,13 +116,26 @@ class Listener(Plugin):
                     while True:
                         try:
                             l = struct.unpack('!L', self.request.recv(4))[0]
+                            if l > max_payload:
+                                self.server.parent.warning(
+                                    'oversized event payload (%d > %d)'
+                                    ' from %s; dropping connection',
+                                    l, max_payload, self.client_address)
+                                break
+                            if not security.allow_pickle_net():
+                                self.server.parent.warning(
+                                    'refusing pickle.loads from %s '
+                                    '(set ADF_ALLOW_PICKLE_NET=1 to'
+                                    ' opt in; see Jira UF-209/F-001)',
+                                    self.client_address)
+                                break
                             event = pickle.loads(self.request.recv(l))
                             event.path.append(self.server.parent.name)
                             self.server.parent.debug(
                                 '%s %s %s', self.client_address, l, event)
                             # we're not a Plugin instance so we have to call event in the parent
                             self.server.parent.event(event=event)
-                        except Exception as e: # likely closed by client
+                        except (OSError, struct.error, pickle.UnpicklingError, EOFError) as e:
                             self.server.parent.debug(e)
                             break
 
@@ -116,8 +149,19 @@ class Listener(Plugin):
                         purpose=ssl.Purpose.CLIENT_AUTH, cafile=self.ssl.get('cafile'))
                     ctx.load_cert_chain(certfile=self.ssl.get(
                         'certfile'), keyfile=self.ssl.get('keyfile'))
-                    ctx.verify_mode = self.ssl.get(
-                        'verify', ssl.VerifyMode.CERT_NONE)
+                    # F-008: default to TLS 1.2+ with peer-cert verification
+                    # so the documented 'ssl' mode actually authenticates the
+                    # peer. Operators can still opt out via verify='none'.
+                    verify_default = ssl.VerifyMode.CERT_REQUIRED
+                    verify = self.ssl.get('verify', verify_default)
+                    if isinstance(verify, str):
+                        verify = {
+                            'none': ssl.CERT_NONE,
+                            'optional': ssl.CERT_OPTIONAL,
+                            'required': ssl.CERT_REQUIRED,
+                        }.get(verify.lower(), verify_default)
+                    ctx.verify_mode = verify
+                    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
                     ciphers = self.ssl.get('ciphers')
                     if ciphers:
                         ctx.set_ciphers(ciphers)
@@ -156,15 +200,27 @@ class Sender(Plugin):
         try:
             if not self.__socket:  # open socket
                 self.__socket = socket.create_connection(
-                    (self.host, int(self.port)), 1)
+                    (self.host, int(self.port)), self.timeout)
+                # F-019: propagate the configured timeout to in-flight I/O
+                # so a stalled peer can't hold the connection forever.
+                self.__socket.settimeout(self.timeout)
                 if self.ssl:
                     import ssl
                     ctx = ssl.create_default_context(
                             purpose=ssl.Purpose.CLIENT_AUTH, cafile=self.ssl.get('cafile'))
                     ctx.load_cert_chain(certfile=self.ssl.get(
                         'certfile'), keyfile=self.ssl.get('keyfile'))
-                    ctx.verify_mode = self.ssl.get(
-                        'verify', ssl.VerifyMode.CERT_NONE)
+                    # F-008: default verify to CERT_REQUIRED + TLSv1.2 minimum.
+                    verify_default = ssl.VerifyMode.CERT_REQUIRED
+                    verify = self.ssl.get('verify', verify_default)
+                    if isinstance(verify, str):
+                        verify = {
+                            'none': ssl.CERT_NONE,
+                            'optional': ssl.CERT_OPTIONAL,
+                            'required': ssl.CERT_REQUIRED,
+                        }.get(verify.lower(), verify_default)
+                    ctx.verify_mode = verify
+                    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
                     ciphers = self.ssl.get('ciphers')
                     if ciphers:
                         ctx.set_ciphers(ciphers)
@@ -248,15 +304,30 @@ class Channel(Plugin):
         '''handle received data'''
         # generate event from data
         try:
+            data = b''.join(v for (k, v) in sorted(self.__buf[addr].items()))
+            if len(data) > security.max_payload_bytes():
+                self.warning(
+                    'oversized channel payload from %s (%d bytes); dropping',
+                    addr, len(data))
+                del self.__buf[addr]
+                return
+            # F-001 gate: refuse pickle.loads of network data unless the
+            # operator opted in via ADF_ALLOW_PICKLE_NET=1.
+            if not security.allow_pickle_net():
+                self.warning(
+                    'refusing pickle.loads from %s (set '
+                    'ADF_ALLOW_PICKLE_NET=1 to opt in; UF-209/F-001)',
+                    addr)
+                del self.__buf[addr]
+                return
             # unpickle
-            e = pickle.loads(
-                b''.join(v for (k, v) in sorted(self.__buf[addr].items())))
+            e = pickle.loads(data)
             # set source
             e.path.append(self.name)
             # send event
             del self.__buf[addr]
             self.event(event=e)
-        except Exception as e:
+        except (pickle.UnpicklingError, EOFError, AttributeError, KeyError) as e:
             self.warning(e, exc_info=True)
 
     def main(self):

@@ -79,14 +79,22 @@ int tun_alloc(char *dev, int flags) {
    if( (fd = open(clonedev, O_RDWR)) < 0 )  return fd;
    memset(&ifr, 0, sizeof(ifr)); //create interface request struct
    ifr.ifr_flags = flags;   /* IFF_TUN or IFF_TAP, plus maybe IFF_NO_PI */
-   if (*dev) strncpy(ifr.ifr_name, dev, IFNAMSIZ); //set name from args
+   if (*dev) {
+     /* F-014: bounded copy + explicit NUL terminator so a too-long
+      * ``dev`` argument cannot overrun ifr_name. */
+     strncpy(ifr.ifr_name, dev, IFNAMSIZ - 1);
+     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+   }
 
    if( (err = ioctl(fd, TUNSETIFF, (void *) &ifr)) < 0 ) {
      close(fd);
      return err;
    }
 
-  strcpy(dev, ifr.ifr_name); //copy name back to arg in case we let kernel pick it
+  /* F-012: bounded copy back, so a kernel-selected name that fills
+   * IFNAMSIZ does not overflow the caller-supplied ``dev`` buffer. */
+  strncpy(dev, ifr.ifr_name, IFNAMSIZ);
+  dev[IFNAMSIZ - 1] = '\0';
   return fd;
 }
 
@@ -166,8 +174,19 @@ int read_file(char **buffer, char *filename){
 	FILE *fp = fopen(filename,"rb");
 	if (!fp) error("opening",filename);
 	fseek(fp,0,SEEK_END); size=ftell(fp); rewind(fp);
-	*buffer = calloc(1,size+1);
-	fread(*buffer, size, 1 , fp);
+	/* F-015: check calloc + fread return values so we don't write
+	 * an uninitialised buffer through to pcap_compile and so we don't
+	 * silently truncate the filter on a short read.
+	 *
+	 * ``error()`` calls ``exit(1)`` and never returns, so we close ``fp``
+	 * unconditionally on the success path only. */
+	*buffer = calloc(1, size + 1);
+	if (!*buffer) error("alloc", filename);
+	if (size > 0 && fread(*buffer, size, 1, fp) != 1) {
+		free(*buffer);
+		*buffer = NULL;
+		error("short read", filename);
+	}
 	fprintf(stderr,"%s: %d bytes\n",filename,size);
 	fclose(fp);
 	return size;
@@ -266,7 +285,11 @@ int main(int argc,const char *argv[]){
 
 	//load filter
 	if (argc == 6) {
-		strncpy(filter_file,argv[5],255); 
+		/* F-013: explicit NUL terminator so a 255+ byte argv[5] does
+		 * not leave filter_file unterminated and trip fopen() into
+		 * a buffer overread on the next character. */
+		strncpy(filter_file, argv[5], sizeof(filter_file) - 1);
+		filter_file[sizeof(filter_file) - 1] = '\0';
 		set_filter();	
 	}
 

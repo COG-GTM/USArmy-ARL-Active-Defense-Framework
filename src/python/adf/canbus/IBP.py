@@ -129,7 +129,7 @@ class Packet(Plugin):
                                   channel=ch, addr=addr, **info)
                     try:
                         del self.frames[(ch, addr)]
-                    except:
+                    except KeyError:
                         pass
                 except KeyError:
                     pass  # we dropped a frame, ignore it
@@ -213,13 +213,26 @@ class Transport(Packet):
         '''handle received data'''
         # generate event from data
         try:
+            if len(data) > security.max_payload_bytes():
+                self.warning(
+                    'oversized IBP payload from %s (%d bytes); dropping',
+                    addr, len(data))
+                return
+            # F-001 gate: refuse pickle.loads of network bytes unless
+            # the operator opted in via ADF_ALLOW_PICKLE_NET=1.
+            if not security.allow_pickle_net():
+                self.warning(
+                    'refusing pickle.loads from %s (set '
+                    'ADF_ALLOW_PICKLE_NET=1 to opt in; UF-209/F-001)',
+                    addr)
+                return
             # unpickle
             e = pickle.loads(data)
             # set source
             e.path.append(self.name)
             # send event
             self.event(event=e)
-        except Exception as e:
+        except (pickle.UnpicklingError, EOFError, AttributeError, KeyError) as e:
             self.warning(e, exc_info=True)
 
     def recv_raw(self, *req, **pkt):  # override recv_raw from Packet to handle Transport protocol

@@ -102,7 +102,12 @@ class Plugin(mp.Process):
                         f = self.__config  # private function so needs special handling
                     # turn _name info self.name and call with event data
                     else:
-                        f = eval('self.'+method)
+                        # F-003: getattr instead of eval('self.'+method) to
+                        # remove the dynamic-eval RCE path.
+                        if not isinstance(method, str) or not method.isidentifier():
+                            raise AttributeError(
+                                'invalid IPC method: %r' % method)
+                        f = getattr(self, method)
                         # util function to extract function/args from event data and call it
                     r = f(*args,**kwargs)
                 except Exception as e:
@@ -312,6 +317,13 @@ class Plugin(mp.Process):
     def eval_packet(self, x, info, packet):
         '''evaluate x as expression based on a packet
         all globals and refs to plugin, packet, and info are available'''
+        # F-005: refuse eval of operator-supplied expressions unless the
+        # operator opted in. Full restricted DSL tracked in UF-246 (F-005-FOLLOWUP).
+        if not security.allow_exec():
+            self.debug(
+                'eval_packet refused: set ADF_ALLOW_EXEC=1 to opt in '
+                '(UF-209/F-005). Expression was: %r', x)
+            return None
         try:
             return eval(x, globals(), {'self': self, 'packet': packet, 'info': info})
         except Exception as e:
@@ -320,6 +332,13 @@ class Plugin(mp.Process):
     def exec_packet(self, x, info, packet):
         '''like eval_packet, but executes statement x
         can be used to call plugin methods or modify state, packet or info'''
+        # F-004/F-005: refuse exec of operator-supplied code unless the
+        # operator opted in.
+        if not security.allow_exec():
+            self.debug(
+                'exec_packet refused: set ADF_ALLOW_EXEC=1 to opt in '
+                '(UF-209/F-004). Expression was: %r', x)
+            return None
         try:
             exec(x, globals(), {'self': self, 'packet': packet, 'info': info})
         except Exception as e:
